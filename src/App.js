@@ -15,86 +15,78 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-function App() {
-  // Define labels with initial balances
-  const initialLabels = [
-    { name: 'THEO', balance: 10 },
-    { name: 'Algorithmen (ALG)', balance: 8 },
-    { name: 'Computergrafik und -vision (CGV)', balance: 8 },
-    { name: 'Datenbanken und Informationssysteme (DBI)', balance: 8 },
-    { name: 'Digitale Biologie und Digitale Medizin (DBM)', balance: 8 },
-    { name: 'Engineering software-intensiver Systeme (SE)', balance: 18 },
-    { name: 'Formale Methoden und ihre Anwendungen (FMA)', balance: 8 },
-    { name: 'Maschinelles Lernen und Datenanalyse (MLA)', balance: 8 },
-    { name: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme (RRV)', balance: 8 },
-    { name: 'Robotik (ROB)', balance: 8 },
-    { name: 'Sicherheit und Datenschutz (SP)', balance: 8 },
-    { name: 'Wissenschaftliches Rechnen und High Performance Computing (HPC)', balance: 8 },
-    { name: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', balance: 19 },
-  ];
+// Define pastel colors, full names, and initial balances for each label
+const initialLabelsData = [
+  { name: 'THEO', fullName: 'THEO', color: '#FFABAB', initialBalance: 10 },
+  { name: 'ALG', fullName: 'Algorithmen', color: '#FFC3A0', initialBalance: 8 },
+  { name: 'CGV', fullName: 'Computergrafik und -vision', color: '#FF677D', initialBalance: 8 },
+  { name: 'DBI', fullName: 'Datenbanken und Informationssysteme', color: '#D4A5A5', initialBalance: 8 },
+  { name: 'DBM', fullName: 'Digitale Biologie und Digitale Medizin', color: '#a196c2', initialBalance: 8 },
+  { name: 'SE', fullName: 'Engineering software-intensiver Systeme', color: '#F9F7F7', initialBalance: 18 },
+  { name: 'FMA', fullName: 'Formale Methoden und ihre Anwendungen', color: '#F4C2C2', initialBalance: 8 },
+  { name: 'MLA', fullName: 'Maschinelles Lernen und Datenanalyse', color: '#F6E58D', initialBalance: 8 },
+  { name: 'RRV', fullName: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme', color: '#45AAB8', initialBalance: 8 },
+  { name: 'ROB', fullName: 'Robotik', color: '#78C4D4', initialBalance: 8 },
+  { name: 'SP', fullName: 'Sicherheit und Datenschutz', color: '#A6D6D5', initialBalance: 8 },
+  { name: 'HPC', fullName: 'Wissenschaftliches Rechnen und High Performance Computing', color: '#B9FBC0', initialBalance: 8 },
+  { name: 'WZ', fullName: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', color: '#F9E6B2', initialBalance: 19 },
+];
 
+function App() {
   const [entryText, setEntryText] = useState('');
-  const [cost, setCost] = useState(0);
+  const [cost, setCost] = useState('');
   const [selectedLabels, setSelectedLabels] = useState([]);
-  const [labels, setLabels] = useState(initialLabels);
   const [entries, setEntries] = useState([]);
+  const [labelsData, setLabelsData] = useState(initialLabelsData.map(label => ({ ...label, balance: label.initialBalance }))); // Add current balance
 
   const totalCostLimit = 53;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    let remainingCost = cost;
-    const lastLabelName = 'Wahlmodule ohne Zuordnung zu einem Fachgebiet';
+    if (selectedLabels.length === 0) {
+      alert('Please select at least one label.');
+      return;
+    }
 
-    const updatedLabels = labels.map((label) => {
-      if (selectedLabels.includes(label.name)) {
-        let newBalance = label.balance - remainingCost;
-
-        if (newBalance < 0) {
-          remainingCost = Math.abs(newBalance);
-          newBalance = 0;
-        } else {
-          remainingCost = 0;
-        }
-
-        return { ...label, balance: newBalance };
-      }
-      return label;
-    });
-
-    const finalLabels = updatedLabels.map((label) => {
-      if (label.name === lastLabelName && remainingCost > 0) {
-        return { ...label, balance: label.balance - remainingCost };
-      }
-      return label;
-    });
-
+    const entryCost = parseInt(cost) || 0;
     const newEntry = {
       text: entryText,
-      cost: cost,
+      cost: entryCost,
       labels: selectedLabels,
     };
 
     setEntries([...entries, newEntry]);
-    setLabels(finalLabels);
+
+    // Update label balances
+    setLabelsData(prevLabels =>
+        prevLabels.map(label => {
+          if (selectedLabels.includes(label.name)) {
+            return { ...label, balance: Math.max(label.balance - entryCost, 0) };
+          }
+          return label;
+        })
+    );
+
     setEntryText('');
-    setCost(0);
+    setCost('');
     setSelectedLabels([]);
   };
 
   const handleDelete = (index) => {
     const entryToDelete = entries[index];
-    let restoredLabels = [...labels];
-    entryToDelete.labels.forEach((labelName) => {
-      const labelIndex = labels.findIndex(label => label.name === labelName);
-      if (labelIndex !== -1) {
-        restoredLabels[labelIndex].balance += entryToDelete.cost;
-      }
-    });
+
+    // Restore the balances of the corresponding labels
+    setLabelsData(prevLabels =>
+        prevLabels.map(label => {
+          if (entryToDelete.labels.includes(label.name)) {
+            return { ...label, balance: Math.min(label.balance + entryToDelete.cost, label.initialBalance) };
+          }
+          return label;
+        })
+    );
 
     const updatedEntries = entries.filter((_, i) => i !== index);
     setEntries(updatedEntries);
-    setLabels(restoredLabels);
   };
 
   const handleLabelSelection = (e) => {
@@ -106,19 +98,19 @@ function App() {
     }
   };
 
-  const calculateProgress = () => {
+  const calculateTotalProgress = () => {
     const totalDeducted = entries.reduce((total, entry) => total + entry.cost, 0);
     return (totalDeducted / totalCostLimit) * 100;
   };
-
-  const progressValue = calculateProgress();
 
   const getLabelProgress = (label) => {
     const totalDeductedForLabel = entries
         .filter(entry => entry.labels.includes(label.name))
         .reduce((total, entry) => total + entry.cost, 0);
-    return ((label.balance + totalDeductedForLabel) / (label.balance + totalCostLimit - totalDeductedForLabel)) * 100;
+    return (totalDeductedForLabel / totalCostLimit) * 100;
   };
+
+  const totalProgressValue = calculateTotalProgress();
 
   return (
       <div style={{ padding: '20px' }}>
@@ -128,10 +120,9 @@ function App() {
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            {/* Entry Text Input */}
             <Grid item xs={12}>
               <TextField
-                  label="Entry Text"
+                  label="Module Name"
                   variant="outlined"
                   fullWidth
                   value={entryText}
@@ -139,37 +130,44 @@ function App() {
                   required
               />
             </Grid>
-
-            {/* Cost Input */}
             <Grid item xs={12}>
               <TextField
-                  label="Cost"
+                  label="ECTS"
                   type="number"
                   variant="outlined"
                   fullWidth
                   value={cost}
-                  onChange={(e) => setCost(parseInt(e.target.value))}
+                  onChange={(e) => setCost(e.target.value)}
                   required
               />
             </Grid>
 
-            {/* Labels Selection */}
             <Grid item xs={12}>
-              <Typography variant="h6">Select Labels:</Typography>
+              <Typography variant="h6">Select Domains:</Typography>
               <Grid container spacing={1}>
-                {labels.map((label) => (
-                    <Grid item xs={6} sm={4} md={3} key={label.name}>
+                {labelsData.map(({ name, fullName, color }) => (
+                    <Grid item xs={6} sm={4} md={3} key={name}>
                       <FormControlLabel
                           control={
                             <Checkbox
-                                checked={selectedLabels.includes(label.name)}
-                                name={label.name}
+                                checked={selectedLabels.includes(name)}
+                                name={name}
                                 onChange={handleLabelSelection}
                             />
                           }
                           label={
-                            <Tooltip title={label.name} placement="top">
-                              <span>{label.name.includes('(') ? label.name.split('(')[1].split(')')[0].trim() : label.name}</span>
+                            <Tooltip title={fullName} placement="top">
+                              <div
+                                  style={{
+                                    backgroundColor: color,
+                                    borderRadius: '20px',
+                                    padding: '5px 10px',
+                                    color: '#333',
+                                    display: 'inline-block',
+                                  }}
+                              >
+                                <span>{name}</span>
+                              </div>
                             </Tooltip>
                           }
                       />
@@ -178,7 +176,6 @@ function App() {
               </Grid>
             </Grid>
 
-            {/* Submit Button */}
             <Grid item xs={12}>
               <Button variant="contained" color="primary" type="submit" fullWidth>
                 Add Entry
@@ -187,9 +184,8 @@ function App() {
           </Grid>
         </form>
 
-        {/* Displaying Entries */}
         <Typography variant="h5" gutterBottom style={{ marginTop: '20px' }}>
-          Entries
+          Modules
         </Typography>
 
         <Paper elevation={3} style={{ padding: '10px' }}>
@@ -199,7 +195,26 @@ function App() {
                   <Grid container alignItems="center" justifyContent="space-between">
                     <Grid item xs={8}>
                       <Typography>
-                        <strong>{entry.text}</strong> - Cost: {entry.cost}, Labels: {entry.labels.join(', ')}
+                        <strong>{entry.text}</strong>
+                        <span style={{ marginLeft: '10px' }}>Cost: {entry.cost || ''}</span>
+                        <span> Labels: {entry.labels.map(label => {
+                          const labelData = labelsData.find(l => l.name === label);
+                          return (
+                              <div
+                                  key={label}
+                                  style={{
+                                    backgroundColor: labelData.color,
+                                    borderRadius: '20px',
+                                    padding: '5px 10px',
+                                    color: '#333',
+                                    display: 'inline-block',
+                                    marginRight: '5px',
+                                  }}
+                              >
+                                {label}
+                              </div>
+                          );
+                        })}</span>
                       </Typography>
                     </Grid>
                     <Grid item xs={4} textAlign="right">
@@ -213,26 +228,44 @@ function App() {
           </List>
         </Paper>
 
-        {/* Progress Bars for Each Label */}
         <div style={{ marginTop: '20px' }}>
-          {labels.filter(label => entries.some(entry => entry.labels.includes(label.name))).map((label) => {
-            const labelProgress = getLabelProgress(label);
+          <Typography variant="h5">Module Distribution:</Typography>
+          {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
+            const totalDeductedForLabel = entries
+                .filter(entry => entry.labels.includes(name))
+                .reduce((total, entry) => total + entry.cost, 0);
+
+            // Only display labels that have entries
+            if (totalDeductedForLabel === 0) return null;
+
+            const labelProgress = getLabelProgress({ name, initialBalance });
             return (
-                <div key={label.name} style={{ marginBottom: '10px' }}>
-                  <Typography variant="h6">{label.name}</Typography>
+                <div key={name} style={{ marginBottom: '10px' }}>
+                  <div
+                      style={{
+                        backgroundColor: color,
+                        borderRadius: '20px',
+                        padding: '5px 10px',
+                        color: '#333',
+                        display: 'inline-block',
+                        justifyContent: 'space-between',
+                      }}
+                  >
+                    <span>{fullName}</span>
+                    <span style={{ marginLeft: '10px' }}>Balance: {balance}</span>
+                  </div>
                   <LinearProgress variant="determinate" value={labelProgress} />
                   <Typography variant="body2" style={{ textAlign: 'right' }}>
-                    Remaining Balance: {label.balance}
+                    {`Current Balance: ${balance} / Total Balance: ${initialBalance}`}
                   </Typography>
                 </div>
             );
           })}
         </div>
 
-        {/* Total ECTS Progress */}
         <div style={{ marginTop: '20px' }}>
           <Typography variant="h6">Total ECTS Progress:</Typography>
-          <LinearProgress variant="determinate" value={progressValue} />
+          <LinearProgress variant="determinate" value={totalProgressValue} />
           <Typography variant="body2" style={{ textAlign: 'right' }}>
             {`${entries.reduce((total, entry) => total + entry.cost, 0)} / ${totalCostLimit}`}
           </Typography>
