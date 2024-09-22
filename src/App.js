@@ -197,7 +197,26 @@ function App() {
                       <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
                         {entry.text}
                         <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
-                          ECTS: {entry.cost || ''} | Domains: {entry.labels.join(', ')}
+                          Cost: {entry.cost || ''} | Domains : {
+                          entry.labels.map(label => {
+                            const labelData = labelsData.find(l => l.name === label);
+                            return (
+                                <div
+                                    key={label}
+                                    style={{
+                                      backgroundColor: labelData.color,
+                                      borderRadius: '20px',
+                                      padding: '5px 10px',
+                                      color: '#333',
+                                      display: 'inline-block',
+                                      marginRight: '5px',
+                                    }}
+                                >
+                                  {label}
+                                </div>
+                            );
+                          })
+                        }
                         </div>
                       </Typography>
                     </Grid>
@@ -239,7 +258,7 @@ function App() {
                     <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Balance: {balance}</span>
                   </div>
                   <LinearProgress variant="determinate" value={labelProgress} />
-                  <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                  <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '8px' }}>
                     {`Current Balance: ${balance} / Total Balance: ${initialBalance}`}
                   </Typography>
                 </div>
