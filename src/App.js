@@ -15,8 +15,24 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+// Define colors for each label
+const labelColors = {
+  THEO: '#3f51b5',
+  'Algorithmen (ALG)': '#f50057',
+  'Computergrafik und -vision (CGV)': '#4caf50',
+  'Datenbanken und Informationssysteme (DBI)': '#ff9800',
+  'Digitale Biologie und Digitale Medizin (DBM)': '#2196f3',
+  'Engineering software-intensiver Systeme (SE)': '#9c27b0',
+  'Formale Methoden und ihre Anwendungen (FMA)': '#e91e63',
+  'Maschinelles Lernen und Datenanalyse (MLA)': '#3f51b5',
+  'Rechnerarchitektur, Rechnernetze und Verteilte Systeme (RRV)': '#009688',
+  'Robotik (ROB)': '#ff5722',
+  'Sicherheit und Datenschutz (SP)': '#795548',
+  'Wissenschaftliches Rechnen und High Performance Computing (HPC)': '#607d8b',
+  'Wahlmodule ohne Zuordnung zu einem Fachgebiet': '#cddc39',
+};
+
 function App() {
-  // Define labels with initial balances
   const initialLabels = [
     { name: 'THEO', balance: 10 },
     { name: 'Algorithmen (ALG)', balance: 8 },
@@ -43,6 +59,10 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (selectedLabels.length === 0) {
+      alert('Please select at least one label.');
+      return;
+    }
     let remainingCost = cost;
     const lastLabelName = 'Wahlmodule ohne Zuordnung zu einem Fachgebiet';
 
@@ -131,7 +151,7 @@ function App() {
             {/* Entry Text Input */}
             <Grid item xs={12}>
               <TextField
-                  label="Entry Text"
+                  label="Module Name"
                   variant="outlined"
                   fullWidth
                   value={entryText}
@@ -143,7 +163,7 @@ function App() {
             {/* Cost Input */}
             <Grid item xs={12}>
               <TextField
-                  label="Cost"
+                  label="ECTS"
                   type="number"
                   variant="outlined"
                   fullWidth
@@ -155,7 +175,7 @@ function App() {
 
             {/* Labels Selection */}
             <Grid item xs={12}>
-              <Typography variant="h6">Select Labels:</Typography>
+              <Typography variant="h6">Select Domains:</Typography>
               <Grid container spacing={1}>
                 {labels.map((label) => (
                     <Grid item xs={6} sm={4} md={3} key={label.name}>
@@ -169,7 +189,17 @@ function App() {
                           }
                           label={
                             <Tooltip title={label.name} placement="top">
-                              <span>{label.name.includes('(') ? label.name.split('(')[1].split(')')[0].trim() : label.name}</span>
+                              <div
+                                  style={{
+                                    backgroundColor: labelColors[label.name],
+                                    borderRadius: '20px',
+                                    padding: '5px 10px',
+                                    color: '#fff',
+                                    display: 'inline-block',
+                                  }}
+                              >
+                                <span>{label.name.includes('(') ? label.name.split('(')[1].split(')')[0].trim() : label.name}</span>
+                              </div>
                             </Tooltip>
                           }
                       />
@@ -189,7 +219,7 @@ function App() {
 
         {/* Displaying Entries */}
         <Typography variant="h5" gutterBottom style={{ marginTop: '20px' }}>
-          Entries
+          Modules
         </Typography>
 
         <Paper elevation={3} style={{ padding: '10px' }}>
@@ -199,7 +229,21 @@ function App() {
                   <Grid container alignItems="center" justifyContent="space-between">
                     <Grid item xs={8}>
                       <Typography>
-                        <strong>{entry.text}</strong> - Cost: {entry.cost}, Labels: {entry.labels.join(', ')}
+                        <strong>{entry.text}</strong> - Cost: {entry.cost}, Labels: {entry.labels.map(label => (
+                          <div
+                              key={label}
+                              style={{
+                                backgroundColor: labelColors[label],
+                                borderRadius: '20px',
+                                padding: '5px 10px',
+                                color: '#fff',
+                                display: 'inline-block',
+                                marginRight: '5px',
+                              }}
+                          >
+                            {label.includes('(') ? label.split('(')[1].split(')')[0].trim() : label}
+                          </div>
+                      ))}
                       </Typography>
                     </Grid>
                     <Grid item xs={4} textAlign="right">
@@ -213,19 +257,33 @@ function App() {
           </List>
         </Paper>
 
-        {/* Progress Bars for Each Label */}
+        {/* Progress Bars for Labels */}
         <div style={{ marginTop: '20px' }}>
-          {labels.filter(label => entries.some(entry => entry.labels.includes(label.name))).map((label) => {
+          <Typography variant="h5">Module Distribution:</Typography>
+          {labels.map((label) => {
             const labelProgress = getLabelProgress(label);
-            return (
-                <div key={label.name} style={{ marginBottom: '10px' }}>
-                  <Typography variant="h6">{label.name}</Typography>
-                  <LinearProgress variant="determinate" value={labelProgress} />
-                  <Typography variant="body2" style={{ textAlign: 'right' }}>
-                    Remaining Balance: {label.balance}
-                  </Typography>
-                </div>
-            );
+            if (entries.some(entry => entry.labels.includes(label.name))) {
+              return (
+                  <div key={label.name} style={{ marginBottom: '10px' }}>
+                    <div
+                        style={{
+                          backgroundColor: labelColors[label.name],
+                          borderRadius: '20px',
+                          padding: '5px 10px',
+                          color: '#fff',
+                          display: 'inline-block',
+                        }}
+                    >
+                      {label.name}
+                    </div>
+                    <LinearProgress variant="determinate" value={labelProgress} />
+                    <Typography variant="body2" style={{ textAlign: 'right' }}>
+                      Balance: {label.balance}
+                    </Typography>
+                  </div>
+              );
+            }
+            return null;
           })}
         </div>
 
