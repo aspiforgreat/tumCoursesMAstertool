@@ -50,13 +50,11 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Ensure at least one label is selected
     if (selectedLabels.length === 0) {
       alert('Please select at least one label.');
       return;
     }
 
-    // Ensure THEO label has at least one additional label
     if (selectedLabels.includes('THEO') && selectedLabels.length === 1) {
       alert('If THEO is selected, at least one other label must also be selected.');
       return;
@@ -69,18 +67,50 @@ function App() {
       labels: selectedLabels,
     };
 
-    setEntries([...entries, newEntry]);
+    let overflow = 0;
 
-    // Update label balances
-    setLabelsData(prevLabels =>
-        prevLabels.map(label => {
-          if (selectedLabels.includes(label.name)) {
-            return { ...label, balance: Math.max(label.balance - entryCost, 0) };
+    // Log initial WZ balance
+    const initialWZBalance = labelsData.find(label => label.name === 'WZ').balance;
+    console.log('Initial WZ Balance:', initialWZBalance);
+
+    setLabelsData((prevLabels) => {
+      return prevLabels.map((label) => {
+        if (selectedLabels.includes(label.name)) {
+          let newBalance = label.balance - entryCost;
+
+          // Check for overflow
+          if (newBalance < 0 && label.name !== 'THEO') {
+            overflow += Math.abs(newBalance);
+            newBalance = 0; // Set to 0 if it goes negative
+          }
+
+          return { ...label, balance: newBalance };
+        }
+        return label;
+      });
+    });
+
+    // Log WZ balance after label updates
+    const updatedWZBalanceAfterLabels = labelsData.find(label => label.name === 'WZ').balance;
+    console.log('WZ Balance after label updates:', updatedWZBalanceAfterLabels);
+
+    // Apply overflow to WZ only
+    if (overflow > 0) {
+      setLabelsData((prevLabels) => {
+        return prevLabels.map((label) => {
+          if (label.name === 'WZ') {
+            const newWZBalance = label.balance - overflow;
+            console.log('WZ Balance before overflow adjustment:', label.balance);
+            console.log('Overflow amount:', overflow);
+            console.log('New WZ Balance after overflow adjustment:', newWZBalance);
+            return { ...label, balance: newWZBalance };
           }
           return label;
-        })
-    );
+        });
+      });
+    }
 
+    setEntries((prevEntries) => [...prevEntries, newEntry]);
     setEntryText('');
     setCost('');
     setSelectedLabels([]);
@@ -113,8 +143,19 @@ function App() {
   };
 
   const calculateTotalProgress = () => {
-    const totalDeducted = entries.reduce((total, entry) => total + entry.cost, 0);
-    return (totalDeducted / totalCostLimit) * 100;
+    const totalDeducted = entries.reduce((total, entry) => {
+      let entryCost = entry.cost;
+
+      // For each entry, ensure overflow isn't counted by comparing with available balances
+      const labelsForEntry = labelsData.filter(label => entry.labels.includes(label.name));
+      labelsForEntry.forEach(label => {
+        entryCost = Math.min(entryCost, label.initialBalance); // Deduct only up to the label's initial balance
+      });
+
+      return total + entryCost;
+    }, 0);
+
+    return totalDeducted;
   };
 
   const handleOpenDialog = () => {
@@ -123,6 +164,7 @@ function App() {
     );
     setOpenDialog(true);
   };
+
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -143,6 +185,17 @@ function App() {
     setOpenDialog(false);
   };
 
+  const calculateWZProgress = () => {
+    const wZLabel = labelsData.find(label => label.name === 'WZ');
+    if (!wZLabel) return 0;
+
+    const totalDeductedForWZ = calculateTotalDeductedForWZ();
+    return (totalDeductedForWZ / wZLabel.initialBalance) * 100;
+  };
+  const calculateTotalDeductedForWZ = () => {
+    return labelsData.find(label => label.name === 'WZ').initialBalance - labelsData.find(label => label.name === 'WZ').balance
+  };
+
   const totalProgressValue = calculateTotalProgress();
 
   return (
@@ -156,199 +209,224 @@ function App() {
           }}
       >
         <div style={{ maxWidth: '800px', width: '100%' }}> {/* Centered container */}
-        <Typography variant="h2" gutterBottom style={{ fontWeight: 'bold' }}>
-          TUM Informatics Master ECTS Calculator
-        </Typography>
+          <Typography variant="h2" gutterBottom style={{ fontWeight: 'bold' }}>
+            TUM Informatics Master ECTS Calculator
+          </Typography>
 
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={8}>
-              <TextField
-                  label="Module Name"
-                  variant="outlined"
-                  fullWidth
-                  value={entryText}
-                  onChange={(e) => setEntryText(e.target.value)}
-                  required
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                  label="ECTS"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  value={cost}
-                  onChange={(e) => setCost(e.target.value)}
-                  required
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h4" style={{ fontWeight: 'bold', display: 'inline-block', marginRight: '10px' }}>
-                Select Domains:
-              </Typography>
-              <Button variant="outlined" color="primary" onClick={handleOpenDialog} style={{ display: 'inline-block' }}>
-                Edit Balances
-              </Button>
-              <Grid container spacing={1}>
-                {labelsData.map(({ name, fullName,initialBalance ,color }) => (
-                    <Grid item xs={6} sm={4} md={3} key={name}>
-                      <FormControlLabel
-                          control={
-                            <Checkbox
-                                checked={selectedLabels.includes(name)}
-                                name={name}
-                                onChange={handleLabelSelection}
-                            />
-                          }
-                          label={
-                            <Tooltip title={fullName} placement="top">
-                              <div
-                                  style={{
-                                    backgroundColor: color,
-                                    borderRadius: '20px',
-                                    padding: '5px 10px',
-                                    color: '#333',
-                                    display: 'inline-block',
-                                  }}
-                              >
-                                <span>{name +" (" +  initialBalance+")"}</span>
-                              </div>
-                            </Tooltip>
-                          }
-                      />
-                    </Grid>
-                ))}
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={8}>
+                <TextField
+                    label="Module Name"
+                    variant="outlined"
+                    fullWidth
+                    value={entryText}
+                    onChange={(e) => setEntryText(e.target.value)}
+                    required
+                />
               </Grid>
-            </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                    label="ECTS"
+                    type="number"
+                    variant="outlined"
+                    fullWidth
+                    value={cost}
+                    onChange={(e) => setCost(e.target.value)}
+                    required
+                />
+              </Grid>
 
-            <Grid item xs={12}>
-              <Button variant="contained" color="primary" type="submit" fullWidth>
-                Add Entry
-              </Button>
-            </Grid>
-          </Grid>
-        </form>
-
-        {/* Dialog for editing balances */}
-        <Dialog open={openDialog} onClose={handleCloseDialog}>
-          <DialogTitle>Edit Initial Balances</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2}>
-              {labelsData.map(({ name, fullName, color }) => (
-                  <Grid item xs={12} key={name}>
-                    <TextField
-                        label={`${fullName} Balance`}
-                        variant="outlined"
-                        fullWidth
-                        value={updatedBalances[name] || ''}
-                        onChange={(e) => handleBalanceChange(name, e.target.value)}
-                        InputProps={{ style: { backgroundColor: color } }}
-                    />
-                  </Grid>
-              ))}
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} color="secondary">
-              Cancel
-            </Button>
-            <Button onClick={handleSubmitBalances} color="primary">
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Display list of entries */}
-        <Typography variant="h5" gutterBottom style={{ marginTop: '20px', fontWeight: 'bold' }}>
-          Modules
-        </Typography>
-
-        <Paper elevation={3} style={{ padding: '10px' }}>
-          <List>
-            {entries.map((entry, index) => (
-                <ListItem key={index} divider>
-                  <Grid container alignItems="center" justifyContent="space-between">
-                    <Grid item xs={8}>
-                      <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
-                        {entry.text}
-                        <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
-                          Cost: {entry.cost || ''} | Domains :{' '}
-                          {entry.labels.map((label) => {
-                            const labelData = labelsData.find((l) => l.name === label);
-                            return (
+              <Grid item xs={12}>
+                <Typography variant="h4" style={{ fontWeight: 'bold', display: 'inline-block', marginRight: '10px' }}>
+                  Select Domains:
+                </Typography>
+                <Button variant="outlined" color="primary" onClick={handleOpenDialog} style={{ display: 'inline-block' }}>
+                  Edit Balances
+                </Button>
+                <Grid container spacing={1}>
+                  {labelsData.map(({ name, fullName,initialBalance ,color }) => (
+                      <Grid item xs={6} sm={4} md={3} key={name}>
+                        <FormControlLabel
+                            control={
+                              <Checkbox
+                                  checked={selectedLabels.includes(name)}
+                                  name={name}
+                                  onChange={handleLabelSelection}
+                              />
+                            }
+                            label={
+                              <Tooltip title={fullName} placement="top">
                                 <div
-                                    key={label}
                                     style={{
-                                      backgroundColor: labelData.color,
+                                      backgroundColor: color,
                                       borderRadius: '20px',
                                       padding: '5px 10px',
                                       color: '#333',
                                       display: 'inline-block',
-                                      marginRight: '5px',
                                     }}
                                 >
-                                  {label}
+                                  <span>{name +" (" +  initialBalance+")"}</span>
                                 </div>
-                            );
-                          })}
-                        </div>
-                      </Typography>
+                              </Tooltip>
+                            }
+                        />
+                      </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Button variant="contained" color="primary" type="submit" fullWidth>
+                  Add Entry
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+
+          {/* Dialog for editing balances */}
+          <Dialog open={openDialog} onClose={handleCloseDialog}>
+            <DialogTitle>Edit Initial Balances</DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2}>
+                {labelsData.map(({ name, fullName, color }) => (
+                    <Grid item xs={12} key={name}>
+                      <TextField
+                          label={`${fullName} Balance`}
+                          variant="outlined"
+                          fullWidth
+                          value={updatedBalances[name] || ''}
+                          onChange={(e) => handleBalanceChange(name, e.target.value)}
+                          InputProps={{ style: { backgroundColor: color } }}
+                      />
                     </Grid>
-                    <Grid item xs={4} textAlign="right">
-                      <IconButton onClick={() => handleDelete(index)} color="secondary">
-                        <DeleteIcon />
-                      </IconButton>
-                    </Grid>
-                  </Grid>
-                </ListItem>
-            ))}
-          </List>
-        </Paper>
+                ))}
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} color="secondary">
+                Cancel
+              </Button>
+              <Button onClick={handleSubmitBalances} color="primary">
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-        {/* Display domain distribution progress */}
-        <Typography variant="h5" style={{ fontWeight: 'bold', marginTop: '20px' }}>
-          Module Distribution:
-        </Typography>
-
-        {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
-          const totalDeductedForLabel = entries.filter((entry) => entry.labels.includes(name)).reduce((total, entry) => total + entry.cost, 0);
-
-          if (totalDeductedForLabel === 0) return null;
-
-          const labelProgress = (totalDeductedForLabel / initialBalance) * 100;
-
-          return (
-              <div key={name} style={{ marginBottom: '20px' }}>
-                <div
-                    style={{
-                      backgroundColor: color,
-                      borderRadius: '20px',
-                      padding: '5px 10px',
-                      color: '#333',
-                      display: 'inline-block',
-                      justifyContent: 'space-between',
-                    }}
-                >
-                  <span style={{ fontWeight: 'bold' }}>{fullName}</span>
-                </div>
-                <LinearProgress variant="determinate" value={labelProgress} />
-                <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
-                  {totalDeductedForLabel}/{initialBalance} ECTS
-                </Typography>
-              </div>
-          );
-        })}
-
-        <div style={{ marginTop: '20px' }}>
-          <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total Progress:</Typography>
-          <LinearProgress variant="determinate" value={totalProgressValue} />
-          <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
-            {totalProgressValue.toFixed(2)}% (Max 53 ECTS)
+          {/* Display list of entries */}
+          <Typography variant="h5" gutterBottom style={{ marginTop: '20px', fontWeight: 'bold' }}>
+            Modules
           </Typography>
+
+          <Paper elevation={3} style={{ padding: '10px' }}>
+            <List>
+              {entries.map((entry, index) => (
+                  <ListItem key={index} divider>
+                    <Grid container alignItems="center" justifyContent="space-between">
+                      <Grid item xs={8}>
+                        <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
+                          {entry.text}
+                          <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
+                            Cost: {entry.cost || ''} | Domains :{' '}
+                            {entry.labels.map((label) => {
+                              const labelData = labelsData.find((l) => l.name === label);
+                              return (
+                                  <div
+                                      key={label}
+                                      style={{
+                                        backgroundColor: labelData.color,
+                                        borderRadius: '20px',
+                                        padding: '5px 10px',
+                                        color: '#333',
+                                        display: 'inline-block',
+                                        marginRight: '5px',
+                                      }}
+                                  >
+                                    {label}
+                                  </div>
+                              );
+                            })}
+                          </div>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4} textAlign="right">
+                        <IconButton onClick={() => handleDelete(index)} color="secondary">
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+              ))}
+            </List>
+          </Paper>
+
+          {/* Display domain distribution progress */}
+          <Typography variant="h5" style={{ fontWeight: 'bold', marginTop: '20px' }}>
+            Module Distribution:
+          </Typography>
+
+          {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
+            const totalDeductedForLabel = entries
+                .filter((entry) => entry.labels.includes(name))
+                .reduce((total, entry) => {
+                  if (name === 'WZ') {
+                    // Calculate total overflow to be added to WZ
+                    const overflowFromOtherLabels = entries.reduce((overflowTotal, entry) => {
+                      return entry.labels.reduce((acc, labelName) => {
+                        const labelData = labelsData.find(label => label.name === labelName);
+                        const balanceDiff = Math.max(0, entry.cost - labelData.initialBalance); // Calculate the overflow
+                        return acc + balanceDiff;
+                      }, 0);
+                    }, 0);
+                    return overflowFromOtherLabels;
+                  } else {
+                    // Normal label calculation
+                    return total + entry.cost;
+                  }
+                }, 0);
+
+            if (totalDeductedForLabel === 0) return null;
+
+            const labelProgress = (totalDeductedForLabel / initialBalance) * 100;
+
+            return (
+                <div key={name} style={{ marginBottom: '20px' }}>
+                  <div
+                      style={{
+                        backgroundColor: color,
+                        borderRadius: '20px',
+                        padding: '5px 10px',
+                        color: '#333',
+                        display: 'inline-block',
+                        justifyContent: 'space-between',
+                      }}
+                  >
+                    <span style={{ fontWeight: 'bold' }}>{fullName}</span>
+                  </div>
+                  <LinearProgress variant="determinate" value={labelProgress} />
+                  <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
+                    {totalDeductedForLabel}/{initialBalance} ECTS
+                  </Typography>
+                </div>
+            );
+          })}
+
+          <div style={{ marginTop: '20px' }}>
+            <Typography variant="h6" style={{ fontWeight: 'bold' }}>Module ohne Zuordnung und Overflow:</Typography>
+            <LinearProgress variant="determinate" value={calculateWZProgress()} />
+            <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
+              {calculateTotalDeductedForWZ()} ECTS of {labelsData.find(label => label.name === 'WZ').initialBalance} ECTS
+            </Typography>
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total Progress:</Typography>
+            <LinearProgress variant="determinate" value={(calculateTotalProgress() / totalCostLimit) * 100} />
+            <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
+              {calculateTotalProgress()} ECTS (Max {totalCostLimit} ECTS)
+            </Typography>
+          </div>
         </div>
-      </div>
       </div>
   );
 }
