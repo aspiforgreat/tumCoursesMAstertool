@@ -138,7 +138,16 @@ function App() {
   const totalProgressValue = calculateTotalProgress();
 
   return (
-      <div style={{ padding: '20px' }}>
+      <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            padding: '0 20px', // Padding on left and right
+          }}
+      >
+        <div style={{ maxWidth: '800px', width: '100%' }}> {/* Centered container */}
         <Typography variant="h2" gutterBottom style={{ fontWeight: 'bold' }}>
           TUM Informatics Master ECTS Calculator
         </Typography>
@@ -175,7 +184,7 @@ function App() {
                 Edit Balances
               </Button>
               <Grid container spacing={1}>
-                {labelsData.map(({ name, fullName, color }) => (
+                {labelsData.map(({ name, fullName,initialBalance ,color }) => (
                     <Grid item xs={6} sm={4} md={3} key={name}>
                       <FormControlLabel
                           control={
@@ -196,7 +205,7 @@ function App() {
                                     display: 'inline-block',
                                   }}
                               >
-                                <span>{name}</span>
+                                <span>{name +" (" +  initialBalance+")"}</span>
                               </div>
                             </Tooltip>
                           }
@@ -331,6 +340,7 @@ function App() {
             {totalProgressValue.toFixed(2)}% (Max 53 ECTS)
           </Typography>
         </div>
+      </div>
       </div>
   );
 }
