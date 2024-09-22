@@ -49,8 +49,16 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Ensure at least one label is selected
     if (selectedLabels.length === 0) {
       alert('Please select at least one label.');
+      return;
+    }
+
+    // Ensure THEO label has at least one additional label
+    if (selectedLabels.includes('THEO') && selectedLabels.length === 1) {
+      alert('If THEO is selected, at least one other label must also be selected.');
       return;
     }
 
