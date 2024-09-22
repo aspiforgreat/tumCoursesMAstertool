@@ -119,8 +119,8 @@ function App() {
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={8}>
               <TextField
                   label="Module Name"
                   variant="outlined"
@@ -130,7 +130,7 @@ function App() {
                   required
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={4}>
               <TextField
                   label="ECTS"
                   type="number"
@@ -141,7 +141,6 @@ function App() {
                   required
               />
             </Grid>
-
             <Grid item xs={12}>
               <Typography variant="h4" style={{ fontWeight: 'bold' }}>Select Domains:</Typography>
               <Grid container spacing={1}>
@@ -175,7 +174,6 @@ function App() {
                 ))}
               </Grid>
             </Grid>
-
             <Grid item xs={12}>
               <Button variant="contained" color="primary" type="submit" fullWidth>
                 Add Entry
