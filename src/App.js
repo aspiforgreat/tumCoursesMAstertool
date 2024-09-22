@@ -327,7 +327,7 @@ function App() {
                         <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
                           {entry.text}
                           <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
-                            Cost: {entry.cost || ''} | Domains :{' '}
+                            ECTS: {entry.cost || ''} | Domains :{' '}
                             {entry.labels.map((label) => {
                               const labelData = labelsData.find((l) => l.name === label);
                               return (
@@ -403,7 +403,12 @@ function App() {
                   >
                     <span style={{ fontWeight: 'bold' }}>{fullName}</span>
                   </div>
-                  <LinearProgress variant="determinate" value={labelProgress} />
+                  <LinearProgress
+                      variant="determinate"
+                      value={labelProgress}
+                      style={{ backgroundColor: '#e0e0e0', borderRadius: '5px' }} // Background color for the track
+                      classes={{ bar: { backgroundColor: color } }} // Dynamic color for the progress bar
+                  />
                   <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
                     {totalDeductedForLabel}/{initialBalance} ECTS
                   </Typography>
@@ -416,7 +421,12 @@ function App() {
                 <Typography variant="h6" style={{ fontWeight: 'bold', color: '#333' }}>
                   Wahlmodule ohne Zuordnung zu einem Fachgebiet und Overflow:
                 </Typography>
-                <LinearProgress variant="determinate" value={calculateWZProgress()} />
+                <LinearProgress
+                    variant="determinate"
+                    value={calculateWZProgress()}
+                    style={{ backgroundColor: '#e0e0e0', borderRadius: '5px' }} // Background color for the track
+                    classes={{ bar: { backgroundColor: labelsData.find(label => label.name === 'WZ').color } }} // Dynamic color for the progress bar
+                />
                 <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
                   {calculateTotalDeductedForWZ()} ECTS of {labelsData.find(label => label.name === 'WZ').initialBalance} ECTS
                 </Typography>
@@ -425,7 +435,12 @@ function App() {
 
           <div style={{ marginTop: '20px' }}>
             <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total Progress:</Typography>
-            <LinearProgress variant="determinate" value={(calculateTotalProgress() / totalCostLimit) * 100} />
+            <LinearProgress
+                variant="determinate"
+                value={(calculateTotalProgress() / totalCostLimit) * 100}
+                style={{ backgroundColor: '#e0e0e0', borderRadius: '5px' }} // Background color for the track
+                classes={{ bar: { backgroundColor: '#3f51b5' } }} // Custom color for the total progress bar
+            />
             <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
               {calculateTotalProgress()} ECTS (Max {totalCostLimit} ECTS)
             </Typography>
