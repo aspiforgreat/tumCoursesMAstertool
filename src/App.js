@@ -203,9 +203,10 @@ function App() {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             height: '100vh',
-            padding: '0 20px', // Padding on left and right
+            padding: '20px 20px', // Added padding on top and bottom
+            overflowY: 'auto',
           }}
       >
         <div style={{ maxWidth: '800px', width: '100%' }}> {/* Centered container */}
