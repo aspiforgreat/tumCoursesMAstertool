@@ -390,7 +390,7 @@ function App() {
             const labelProgress = (totalDeductedForLabel / initialBalance) * 100;
 
             return (
-                <div key={name} style={{ marginBottom: '20px' }}>
+                <div key={name} style={{ marginBottom: '20px', backgroundColor: color, borderRadius: '10px', padding: '10px' }}>
                   <div
                       style={{
                         backgroundColor: color,
@@ -411,13 +411,17 @@ function App() {
             );
           })}
 
-          <div style={{ marginTop: '20px' }}>
-            <Typography variant="h6" style={{ fontWeight: 'bold' }}>Module ohne Zuordnung und Overflow:</Typography>
-            <LinearProgress variant="determinate" value={calculateWZProgress()} />
-            <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
-              {calculateTotalDeductedForWZ()} ECTS of {labelsData.find(label => label.name === 'WZ').initialBalance} ECTS
-            </Typography>
-          </div>
+          {calculateTotalDeductedForWZ() > 0 && (
+              <div style={{ marginTop: '20px', backgroundColor: labelsData.find(label => label.name === 'WZ').color, borderRadius: '10px', padding: '10px' }}>
+                <Typography variant="h6" style={{ fontWeight: 'bold', color: '#333' }}>
+                  Wahlmodule ohne Zuordnung zu einem Fachgebiet und Overflow:
+                </Typography>
+                <LinearProgress variant="determinate" value={calculateWZProgress()} />
+                <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
+                  {calculateTotalDeductedForWZ()} ECTS of {labelsData.find(label => label.name === 'WZ').initialBalance} ECTS
+                </Typography>
+              </div>
+          )}
 
           <div style={{ marginTop: '20px' }}>
             <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total Progress:</Typography>
