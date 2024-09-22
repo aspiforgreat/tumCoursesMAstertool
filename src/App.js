@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { TextField, Checkbox, Button, FormControlLabel, Grid, Typography, Paper, List, ListItem, IconButton } from '@mui/material';
+import {
+  TextField,
+  Checkbox,
+  Button,
+  FormControlLabel,
+  Grid,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  IconButton,
+  LinearProgress,
+  Tooltip,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function App() {
@@ -25,6 +38,8 @@ function App() {
   const [selectedLabels, setSelectedLabels] = useState([]);
   const [labels, setLabels] = useState(initialLabels);
   const [entries, setEntries] = useState([]);
+
+  const totalCostLimit = 53;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -91,10 +106,17 @@ function App() {
     }
   };
 
+  const calculateProgress = () => {
+    const totalDeducted = entries.reduce((total, entry) => total + entry.cost, 0);
+    return (totalDeducted / totalCostLimit) * 100;
+  };
+
+  const progressValue = calculateProgress();
+
   return (
       <div style={{ padding: '20px' }}>
         <Typography variant="h4" gutterBottom>
-          Cost Tracker
+          TUM Informatics Master ECTS Calculator
         </Typography>
 
         <form onSubmit={handleSubmit}>
@@ -138,7 +160,11 @@ function App() {
                                 onChange={handleLabelSelection}
                             />
                           }
-                          label={`${label.name} (Balance: ${label.balance})`}
+                          label={
+                            <Tooltip title={label.name} placement="top">
+                              <span>{label.name.includes('(') ? label.name.split('(')[1].split(')')[0].trim() : label.name}</span>
+                            </Tooltip>
+                          }
                       />
                     </Grid>
                 ))}
@@ -179,6 +205,15 @@ function App() {
             ))}
           </List>
         </Paper>
+
+        {/* Progress Bar */}
+        <div style={{ marginTop: '20px' }}>
+          <Typography variant="h6">Total ECTS Progress:</Typography>
+          <LinearProgress variant="determinate" value={progressValue} />
+          <Typography variant="body2" style={{ textAlign: 'right' }}>
+            {`${entries.reduce((total, entry) => total + entry.cost, 0)} / ${totalCostLimit}`}
+          </Typography>
+        </div>
       </div>
   );
 }
