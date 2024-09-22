@@ -12,6 +12,10 @@ import {
   IconButton,
   LinearProgress,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -37,7 +41,9 @@ function App() {
   const [cost, setCost] = useState('');
   const [selectedLabels, setSelectedLabels] = useState([]);
   const [entries, setEntries] = useState([]);
-  const [labelsData, setLabelsData] = useState(initialLabelsData.map(label => ({ ...label, balance: label.initialBalance }))); // Add current balance
+  const [labelsData, setLabelsData] = useState(initialLabelsData.map(label => ({ ...label, balance: label.initialBalance })));
+  const [openDialog, setOpenDialog] = useState(false); // State for dialog
+  const [updatedBalances, setUpdatedBalances] = useState({}); // State to track updated balances
 
   const totalCostLimit = 53;
 
@@ -103,11 +109,30 @@ function App() {
     return (totalDeducted / totalCostLimit) * 100;
   };
 
-  const getLabelProgress = (label) => {
-    const totalDeductedForLabel = entries
-        .filter(entry => entry.labels.includes(label.name))
-        .reduce((total, entry) => total + entry.cost, 0);
-    return (totalDeductedForLabel / label.initialBalance) * 100;
+  const handleOpenDialog = () => {
+    setUpdatedBalances(
+        labelsData.reduce((acc, label) => ({ ...acc, [label.name]: label.initialBalance }), {})
+    );
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleBalanceChange = (name, value) => {
+    setUpdatedBalances(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
+  };
+
+  const handleSubmitBalances = () => {
+    setLabelsData(prevLabels =>
+        prevLabels.map(label => ({
+          ...label,
+          initialBalance: updatedBalances[label.name],
+          balance: updatedBalances[label.name], // Update both initial and current balance
+        }))
+    );
+    setOpenDialog(false);
   };
 
   const totalProgressValue = calculateTotalProgress();
@@ -141,8 +166,14 @@ function App() {
                   required
               />
             </Grid>
+
             <Grid item xs={12}>
-              <Typography variant="h4" style={{ fontWeight: 'bold' }}>Select Domains:</Typography>
+              <Typography variant="h4" style={{ fontWeight: 'bold', display: 'inline-block', marginRight: '10px' }}>
+                Select Domains:
+              </Typography>
+              <Button variant="outlined" color="primary" onClick={handleOpenDialog} style={{ display: 'inline-block' }}>
+                Edit Balances
+              </Button>
               <Grid container spacing={1}>
                 {labelsData.map(({ name, fullName, color }) => (
                     <Grid item xs={6} sm={4} md={3} key={name}>
@@ -174,6 +205,7 @@ function App() {
                 ))}
               </Grid>
             </Grid>
+
             <Grid item xs={12}>
               <Button variant="contained" color="primary" type="submit" fullWidth>
                 Add Entry
@@ -182,6 +214,36 @@ function App() {
           </Grid>
         </form>
 
+        {/* Dialog for editing balances */}
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+          <DialogTitle>Edit Initial Balances</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2}>
+              {labelsData.map(({ name, fullName, color }) => (
+                  <Grid item xs={12} key={name}>
+                    <TextField
+                        label={`${fullName} Balance`}
+                        variant="outlined"
+                        fullWidth
+                        value={updatedBalances[name] || ''}
+                        onChange={(e) => handleBalanceChange(name, e.target.value)}
+                        InputProps={{ style: { backgroundColor: color } }}
+                    />
+                  </Grid>
+              ))}
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitBalances} color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Display list of entries */}
         <Typography variant="h5" gutterBottom style={{ marginTop: '20px', fontWeight: 'bold' }}>
           Modules
         </Typography>
@@ -195,9 +257,9 @@ function App() {
                       <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
                         {entry.text}
                         <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
-                          Cost: {entry.cost || ''} | Domains : {
-                          entry.labels.map(label => {
-                            const labelData = labelsData.find(l => l.name === label);
+                          Cost: {entry.cost || ''} | Domains :{' '}
+                          {entry.labels.map((label) => {
+                            const labelData = labelsData.find((l) => l.name === label);
                             return (
                                 <div
                                     key={label}
@@ -213,8 +275,7 @@ function App() {
                                   {label}
                                 </div>
                             );
-                          })
-                        }
+                          })}
                         </div>
                       </Typography>
                     </Grid>
@@ -229,46 +290,45 @@ function App() {
           </List>
         </Paper>
 
-        <div style={{ marginTop: '20px' }}>
-          <Typography variant="h5" style={{ fontWeight: 'bold' }}>Module Distribution:</Typography>
-          {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
-            const totalDeductedForLabel = entries
-                .filter(entry => entry.labels.includes(name))
-                .reduce((total, entry) => total + entry.cost, 0);
+        {/* Display domain distribution progress */}
+        <Typography variant="h5" style={{ fontWeight: 'bold', marginTop: '20px' }}>
+          Module Distribution:
+        </Typography>
 
-            // Only display labels that have entries
-            if (totalDeductedForLabel === 0) return null;
+        {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
+          const totalDeductedForLabel = entries.filter((entry) => entry.labels.includes(name)).reduce((total, entry) => total + entry.cost, 0);
 
-            const labelProgress = getLabelProgress({ name, initialBalance });
-            return (
-                <div key={name} style={{ marginBottom: '20px' }}>
-                  <div
-                      style={{
-                        backgroundColor: color,
-                        borderRadius: '20px',
-                        padding: '5px 10px',
-                        color: '#333',
-                        display: 'inline-block',
-                        justifyContent: 'space-between',
-                      }}
-                  >
-                    <span style={{ fontWeight: 'bold' }}>{fullName}</span>
-                    <span style={{ marginLeft: '10px', fontWeight: 'bold' }}></span>
-                  </div>
-                  <LinearProgress variant="determinate" value={labelProgress} />
-                  <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '8px' }}>
-                    {`Current Balance: ${balance} / Total Balance: ${initialBalance}`}
-                  </Typography>
+          if (totalDeductedForLabel === 0) return null;
+
+          const labelProgress = (totalDeductedForLabel / initialBalance) * 100;
+
+          return (
+              <div key={name} style={{ marginBottom: '20px' }}>
+                <div
+                    style={{
+                      backgroundColor: color,
+                      borderRadius: '20px',
+                      padding: '5px 10px',
+                      color: '#333',
+                      display: 'inline-block',
+                      justifyContent: 'space-between',
+                    }}
+                >
+                  <span style={{ fontWeight: 'bold' }}>{fullName}</span>
                 </div>
-            );
-          })}
-        </div>
+                <LinearProgress variant="determinate" value={labelProgress} />
+                <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
+                  {totalDeductedForLabel}/{initialBalance} ECTS
+                </Typography>
+              </div>
+          );
+        })}
 
         <div style={{ marginTop: '20px' }}>
-          <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total ECTS Progress:</Typography>
+          <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total Progress:</Typography>
           <LinearProgress variant="determinate" value={totalProgressValue} />
-          <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold' }}>
-            {`${entries.reduce((total, entry) => total + entry.cost, 0)} / ${totalCostLimit}`}
+          <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
+            {totalProgressValue.toFixed(2)}% (Max 53 ECTS)
           </Typography>
         </div>
       </div>
