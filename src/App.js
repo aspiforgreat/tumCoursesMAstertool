@@ -194,27 +194,11 @@ function App() {
                 <ListItem key={index} divider>
                   <Grid container alignItems="center" justifyContent="space-between">
                     <Grid item xs={8}>
-                      <Typography style={{ fontWeight: 'bold' }}>
-                        <strong>{entry.text}</strong>
-                        <span style={{ marginLeft: '10px' }}>Cost: {entry.cost || ''}</span>
-                        <span> | Labels: {entry.labels.map(label => {
-                          const labelData = labelsData.find(l => l.name === label);
-                          return (
-                              <div
-                                  key={label}
-                                  style={{
-                                    backgroundColor: labelData.color,
-                                    borderRadius: '20px',
-                                    padding: '5px 10px',
-                                    color: '#333',
-                                    display: 'inline-block',
-                                    marginRight: '5px',
-                                  }}
-                              >
-                                {label}
-                              </div>
-                          );
-                        })}</span>
+                      <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
+                        {entry.text}
+                        <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
+                          ECTS: {entry.cost || ''} | Domains: {entry.labels.join(', ')}
+                        </div>
                       </Typography>
                     </Grid>
                     <Grid item xs={4} textAlign="right">
@@ -240,7 +224,7 @@ function App() {
 
             const labelProgress = getLabelProgress({ name, initialBalance });
             return (
-                <div key={name} style={{ marginBottom: '10px' }}>
+                <div key={name} style={{ marginBottom: '20px' }}>
                   <div
                       style={{
                         backgroundColor: color,
