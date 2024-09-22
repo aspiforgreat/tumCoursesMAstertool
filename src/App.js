@@ -107,7 +107,7 @@ function App() {
     const totalDeductedForLabel = entries
         .filter(entry => entry.labels.includes(label.name))
         .reduce((total, entry) => total + entry.cost, 0);
-    return (totalDeductedForLabel / totalCostLimit) * 100;
+    return (totalDeductedForLabel / label.initialBalance) * 100;
   };
 
   const totalProgressValue = calculateTotalProgress();
@@ -255,7 +255,7 @@ function App() {
                       }}
                   >
                     <span style={{ fontWeight: 'bold' }}>{fullName}</span>
-                    <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Balance: {balance}</span>
+                    <span style={{ marginLeft: '10px', fontWeight: 'bold' }}></span>
                   </div>
                   <LinearProgress variant="determinate" value={labelProgress} />
                   <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '8px' }}>
