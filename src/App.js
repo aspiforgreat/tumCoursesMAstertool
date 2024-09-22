@@ -4,7 +4,7 @@ import {
   Checkbox,
   Button,
   FormControlLabel,
-  Grid2,
+  Grid,
   Typography,
   Paper,
   List,
@@ -15,44 +15,27 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-// Define pastel colors for each label
-const labelColors = {
-  THEO: '#FFABAB',
-  'Algorithmen (ALG)': '#FFC3A0',
-  'Computergrafik und -vision (CGV)': '#FF677D',
-  'Datenbanken und Informationssysteme (DBI)': '#D4A5A5',
-  'Digitale Biologie und Digitale Medizin (DBM)': '#a196c2',
-  'Engineering software-intensiver Systeme (SE)': '#F9F7F7',
-  'Formale Methoden und ihre Anwendungen (FMA)': '#F4C2C2',
-  'Maschinelles Lernen und Datenanalyse (MLA)': '#F6E58D',
-  'Rechnerarchitektur, Rechnernetze und Verteilte Systeme (RRV)': '#45AAB8',
-  'Robotik (ROB)': '#78C4D4',
-  'Sicherheit und Datenschutz (SP)': '#A6D6D5',
-  'Wissenschaftliches Rechnen und High Performance Computing (HPC)': '#B9FBC0',
-  'Wahlmodule ohne Zuordnung zu einem Fachgebiet': '#F9E6B2',
-};
+// Define pastel colors, full names, and initial balances for each label
+const labelsData = [
+  { name: 'THEO', fullName: 'THEO', color: '#FFABAB', balance: 10 },
+  { name: 'ALG', fullName: 'Algorithmen', color: '#FFC3A0', balance: 8 },
+  { name: 'CGV', fullName: 'Computergrafik und -vision', color: '#FF677D', balance: 8 },
+  { name: 'DBI', fullName: 'Datenbanken und Informationssysteme', color: '#D4A5A5', balance: 8 },
+  { name: 'DBM', fullName: 'Digitale Biologie und Digitale Medizin', color: '#a196c2', balance: 8 },
+  { name: 'SE', fullName: 'Engineering software-intensiver Systeme', color: '#F9F7F7', balance: 18 },
+  { name: 'FMA', fullName: 'Formale Methoden und ihre Anwendungen', color: '#F4C2C2', balance: 8 },
+  { name: 'MLA', fullName: 'Maschinelles Lernen und Datenanalyse', color: '#F6E58D', balance: 8 },
+  { name: 'RRV', fullName: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme', color: '#45AAB8', balance: 8 },
+  { name: 'ROB', fullName: 'Robotik', color: '#78C4D4', balance: 8 },
+  { name: 'SP', fullName: 'Sicherheit und Datenschutz', color: '#A6D6D5', balance: 8 },
+  { name: 'HPC', fullName: 'Wissenschaftliches Rechnen und High Performance Computing', color: '#B9FBC0', balance: 8 },
+  { name: 'WZ', fullName: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', color: '#F9E6B2', balance: 19 },
+];
 
 function App() {
-  const initialLabels = [
-    { name: 'THEO', balance: 10 },
-    { name: 'Algorithmen (ALG)', balance: 8 },
-    { name: 'Computergrafik und -vision (CGV)', balance: 8 },
-    { name: 'Datenbanken und Informationssysteme (DBI)', balance: 8 },
-    { name: 'Digitale Biologie und Digitale Medizin (DBM)', balance: 8 },
-    { name: 'Engineering software-intensiver Systeme (SE)', balance: 18 },
-    { name: 'Formale Methoden und ihre Anwendungen (FMA)', balance: 8 },
-    { name: 'Maschinelles Lernen und Datenanalyse (MLA)', balance: 8 },
-    { name: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme (RRV)', balance: 8 },
-    { name: 'Robotik (ROB)', balance: 8 },
-    { name: 'Sicherheit und Datenschutz (SP)', balance: 8 },
-    { name: 'Wissenschaftliches Rechnen und High Performance Computing (HPC)', balance: 8 },
-    { name: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', balance: 19 },
-  ];
-
   const [entryText, setEntryText] = useState('');
   const [cost, setCost] = useState('');
   const [selectedLabels, setSelectedLabels] = useState([]);
-  const [labels, setLabels] = useState(initialLabels);
   const [entries, setEntries] = useState([]);
 
   const totalCostLimit = 53;
@@ -63,10 +46,11 @@ function App() {
       alert('Please select at least one label.');
       return;
     }
-    let remainingCost = parseInt(cost) || 0; // Use parsed cost or 0 if empty
-    const lastLabelName = 'Wahlmodule ohne Zuordnung zu einem Fachgebiet';
 
-    const updatedLabels = labels.map((label) => {
+    let remainingCost = parseInt(cost) || 0;
+    const lastLabelName = 'WZ';
+
+    const updatedLabels = labelsData.map((label) => {
       if (selectedLabels.includes(label.name)) {
         let newBalance = label.balance - remainingCost;
 
@@ -96,17 +80,16 @@ function App() {
     };
 
     setEntries([...entries, newEntry]);
-    setLabels(finalLabels);
     setEntryText('');
-    setCost(''); // Reset cost field to empty
+    setCost('');
     setSelectedLabels([]);
   };
 
   const handleDelete = (index) => {
     const entryToDelete = entries[index];
-    let restoredLabels = [...labels];
+    let restoredLabels = [...labelsData];
     entryToDelete.labels.forEach((labelName) => {
-      const labelIndex = labels.findIndex(label => label.name === labelName);
+      const labelIndex = restoredLabels.findIndex(label => label.name === labelName);
       if (labelIndex !== -1) {
         restoredLabels[labelIndex].balance += entryToDelete.cost;
       }
@@ -114,7 +97,6 @@ function App() {
 
     const updatedEntries = entries.filter((_, i) => i !== index);
     setEntries(updatedEntries);
-    setLabels(restoredLabels);
   };
 
   const handleLabelSelection = (e) => {
@@ -126,19 +108,20 @@ function App() {
     }
   };
 
-  const calculateProgress = () => {
+  const calculateTotalProgress = () => {
     const totalDeducted = entries.reduce((total, entry) => total + entry.cost, 0);
     return (totalDeducted / totalCostLimit) * 100;
   };
-
-  const progressValue = calculateProgress();
 
   const getLabelProgress = (label) => {
     const totalDeductedForLabel = entries
         .filter(entry => entry.labels.includes(label.name))
         .reduce((total, entry) => total + entry.cost, 0);
-    return ((label.balance + totalDeductedForLabel) / (label.balance + totalCostLimit - totalDeductedForLabel)) * 100;
+    const totalForLabel = label.balance + (label.balance + totalCostLimit); // Total available balance
+    return ((totalDeductedForLabel) / totalForLabel) * 100; // Calculate progress as a percentage of the total balance
   };
+
+  const totalProgressValue = calculateTotalProgress();
 
   return (
       <div style={{ padding: '20px' }}>
@@ -147,79 +130,71 @@ function App() {
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          <Grid2 container spacing={2}>
-            {/* Combined Module Name and Cost Input */}
-            <Grid2 item xs={12}>
-              <Grid2 container spacing={2}>
-                <Grid2 item xs={800}>
-                  <TextField
-                      label="Module Name"
-                      variant="outlined"
-                      fullWidth
-                      value={entryText}
-                      onChange={(e) => setEntryText(e.target.value)}
-                      required
-                  />
-                </Grid2>
-                <Grid2 item xs={4}>
-                  <TextField
-                      label="ECTS"
-                      type="number"
-                      variant="outlined"
-                      fullWidth
-                      value={cost}
-                      onChange={(e) => setCost(e.target.value)}
-                      required
-                  />
-                </Grid2>
-              </Grid2>
-            </Grid2>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                  label="Module Name"
+                  variant="outlined"
+                  fullWidth
+                  value={entryText}
+                  onChange={(e) => setEntryText(e.target.value)}
+                  required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                  label="ECTS"
+                  type="number"
+                  variant="outlined"
+                  fullWidth
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                  required
+              />
+            </Grid>
 
-            {/* Labels Selection */}
-            <Grid2 item xs={12}>
+            <Grid item xs={12}>
               <Typography variant="h6">Select Domains:</Typography>
-              <Grid2 container spacing={1}>
-                {labels.map((label) => (
-                    <Grid2 item xs={6} sm={4} md={3} key={label.name}>
+              <Grid container spacing={1}>
+                {labelsData.map(({ name, fullName, color }) => (
+                    <Grid item xs={6} sm={4} md={3} key={name}>
                       <FormControlLabel
                           control={
                             <Checkbox
-                                checked={selectedLabels.includes(label.name)}
-                                name={label.name}
+                                checked={selectedLabels.includes(name)}
+                                name={name}
                                 onChange={handleLabelSelection}
                             />
                           }
                           label={
-                            <Tooltip title={label.name} placement="top">
+                            <Tooltip title={fullName} placement="top">
                               <div
                                   style={{
-                                    backgroundColor: labelColors[label.name],
+                                    backgroundColor: color,
                                     borderRadius: '20px',
                                     padding: '5px 10px',
                                     color: '#333',
                                     display: 'inline-block',
                                   }}
                               >
-                                <span>{label.name}</span>
+                                <span>{name}</span>
                               </div>
                             </Tooltip>
                           }
                       />
-                    </Grid2>
+                    </Grid>
                 ))}
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
 
-            {/* Submit Button */}
-            <Grid2 item xs={12}>
+            <Grid item xs={12}>
               <Button variant="contained" color="primary" type="submit" fullWidth>
                 Add Entry
               </Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </form>
 
-        {/* Displaying Entries */}
         <Typography variant="h5" gutterBottom style={{ marginTop: '20px' }}>
           Modules
         </Typography>
@@ -228,50 +203,52 @@ function App() {
           <List>
             {entries.map((entry, index) => (
                 <ListItem key={index} divider>
-                  <Grid2 container alignItems="center" justifyContent="space-between">
-                    <Grid2 item xs={8}>
+                  <Grid container alignItems="center" justifyContent="space-between">
+                    <Grid item xs={8}>
                       <Typography>
                         <strong>{entry.text}</strong>
                         <span style={{ marginLeft: '10px' }}>Cost: {entry.cost || ''}</span>
-                        <span> Labels: {entry.labels.map(label => (
-                            <div
-                                key={label}
-                                style={{
-                                  backgroundColor: labelColors[label],
-                                  borderRadius: '20px',
-                                  padding: '5px 10px',
-                                  color: '#333',
-                                  display: 'inline-block',
-                                  marginRight: '5px',
-                                }}
-                            >
-                              {label.includes('(') ? label.split('(')[1].split(')')[0].trim() : label}
-                            </div>
-                        ))}</span>
+                        <span> Labels: {entry.labels.map(label => {
+                          const labelData = labelsData.find(l => l.name === label);
+                          return (
+                              <div
+                                  key={label}
+                                  style={{
+                                    backgroundColor: labelData.color,
+                                    borderRadius: '20px',
+                                    padding: '5px 10px',
+                                    color: '#333',
+                                    display: 'inline-block',
+                                    marginRight: '5px',
+                                  }}
+                              >
+                                {label}
+                              </div>
+                          );
+                        })}</span>
                       </Typography>
-                    </Grid2>
-                    <Grid2 item xs={4} textAlign="right">
+                    </Grid>
+                    <Grid item xs={4} textAlign="right">
                       <IconButton onClick={() => handleDelete(index)} color="secondary">
                         <DeleteIcon />
                       </IconButton>
-                    </Grid2>
-                  </Grid2>
+                    </Grid>
+                  </Grid>
                 </ListItem>
             ))}
           </List>
         </Paper>
 
-        {/* Progress Bars for Labels */}
         <div style={{ marginTop: '20px' }}>
           <Typography variant="h5">Module Distribution:</Typography>
-          {labels.map((label) => {
-            const labelProgress = getLabelProgress(label);
-            if (entries.some(entry => entry.labels.includes(label.name))) {
+          {labelsData.map(({ name, fullName, color, balance }) => {
+            const labelProgress = getLabelProgress({ name, balance });
+            if (entries.some(entry => entry.labels.includes(name))) {
               return (
-                  <div key={label.name} style={{ marginBottom: '10px' }}>
+                  <div key={name} style={{ marginBottom: '10px' }}>
                     <div
                         style={{
-                          backgroundColor: labelColors[label.name],
+                          backgroundColor: color,
                           borderRadius: '20px',
                           padding: '5px 10px',
                           color: '#333',
@@ -279,8 +256,8 @@ function App() {
                           justifyContent: 'space-between',
                         }}
                     >
-                      <span>{label.name}</span>
-                      <span style={{ marginLeft: '10px' }}>Balance: {label.balance}</span>
+                      <span>{fullName}</span>
+                      <span style={{ marginLeft: '10px' }}>Balance: {balance}</span>
                     </div>
                     <LinearProgress variant="determinate" value={labelProgress} />
                   </div>
@@ -290,10 +267,9 @@ function App() {
           })}
         </div>
 
-        {/* Total ECTS Progress */}
         <div style={{ marginTop: '20px' }}>
           <Typography variant="h6">Total ECTS Progress:</Typography>
-          <LinearProgress variant="determinate" value={progressValue} />
+          <LinearProgress variant="determinate" value={totalProgressValue} />
           <Typography variant="body2" style={{ textAlign: 'right' }}>
             {`${entries.reduce((total, entry) => total + entry.cost, 0)} / ${totalCostLimit}`}
           </Typography>
