@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/untitled.iml" filepath="$PROJECT_DIR$/.idea/untitled.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../tumMasterCoursesTool/.idea/TUM Master Courses Tool.iml" filepath="$PROJECT_DIR$/../tumMasterCoursesTool/.idea/TUM Master Courses Tool.iml" />
     </modules>
   </component>
 </project>
