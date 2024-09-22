@@ -113,6 +113,13 @@ function App() {
 
   const progressValue = calculateProgress();
 
+  const getLabelProgress = (label) => {
+    const totalDeductedForLabel = entries
+        .filter(entry => entry.labels.includes(label.name))
+        .reduce((total, entry) => total + entry.cost, 0);
+    return ((label.balance + totalDeductedForLabel) / (label.balance + totalCostLimit - totalDeductedForLabel)) * 100;
+  };
+
   return (
       <div style={{ padding: '20px' }}>
         <Typography variant="h4" gutterBottom>
@@ -206,7 +213,23 @@ function App() {
           </List>
         </Paper>
 
-        {/* Progress Bar */}
+        {/* Progress Bars for Each Label */}
+        <div style={{ marginTop: '20px' }}>
+          {labels.filter(label => entries.some(entry => entry.labels.includes(label.name))).map((label) => {
+            const labelProgress = getLabelProgress(label);
+            return (
+                <div key={label.name} style={{ marginBottom: '10px' }}>
+                  <Typography variant="h6">{label.name}</Typography>
+                  <LinearProgress variant="determinate" value={labelProgress} />
+                  <Typography variant="body2" style={{ textAlign: 'right' }}>
+                    Remaining Balance: {label.balance}
+                  </Typography>
+                </div>
+            );
+          })}
+        </div>
+
+        {/* Total ECTS Progress */}
         <div style={{ marginTop: '20px' }}>
           <Typography variant="h6">Total ECTS Progress:</Typography>
           <LinearProgress variant="determinate" value={progressValue} />
