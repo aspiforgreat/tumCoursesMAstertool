@@ -114,7 +114,7 @@ function App() {
 
   return (
       <div style={{ padding: '20px' }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h2" gutterBottom style={{ fontWeight: 'bold' }}>
           TUM Informatics Master ECTS Calculator
         </Typography>
 
@@ -143,7 +143,7 @@ function App() {
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="h6">Select Domains:</Typography>
+              <Typography variant="h4" style={{ fontWeight: 'bold' }}>Select Domains:</Typography>
               <Grid container spacing={1}>
                 {labelsData.map(({ name, fullName, color }) => (
                     <Grid item xs={6} sm={4} md={3} key={name}>
@@ -184,7 +184,7 @@ function App() {
           </Grid>
         </form>
 
-        <Typography variant="h5" gutterBottom style={{ marginTop: '20px' }}>
+        <Typography variant="h5" gutterBottom style={{ marginTop: '20px', fontWeight: 'bold' }}>
           Modules
         </Typography>
 
@@ -194,10 +194,10 @@ function App() {
                 <ListItem key={index} divider>
                   <Grid container alignItems="center" justifyContent="space-between">
                     <Grid item xs={8}>
-                      <Typography>
+                      <Typography style={{ fontWeight: 'bold' }}>
                         <strong>{entry.text}</strong>
                         <span style={{ marginLeft: '10px' }}>Cost: {entry.cost || ''}</span>
-                        <span> Labels: {entry.labels.map(label => {
+                        <span> | Labels: {entry.labels.map(label => {
                           const labelData = labelsData.find(l => l.name === label);
                           return (
                               <div
@@ -229,7 +229,7 @@ function App() {
         </Paper>
 
         <div style={{ marginTop: '20px' }}>
-          <Typography variant="h5">Module Distribution:</Typography>
+          <Typography variant="h5" style={{ fontWeight: 'bold' }}>Module Distribution:</Typography>
           {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
             const totalDeductedForLabel = entries
                 .filter(entry => entry.labels.includes(name))
@@ -251,11 +251,11 @@ function App() {
                         justifyContent: 'space-between',
                       }}
                   >
-                    <span>{fullName}</span>
-                    <span style={{ marginLeft: '10px' }}>Balance: {balance}</span>
+                    <span style={{ fontWeight: 'bold' }}>{fullName}</span>
+                    <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>Balance: {balance}</span>
                   </div>
                   <LinearProgress variant="determinate" value={labelProgress} />
-                  <Typography variant="body2" style={{ textAlign: 'right' }}>
+                  <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold' }}>
                     {`Current Balance: ${balance} / Total Balance: ${initialBalance}`}
                   </Typography>
                 </div>
@@ -264,9 +264,9 @@ function App() {
         </div>
 
         <div style={{ marginTop: '20px' }}>
-          <Typography variant="h6">Total ECTS Progress:</Typography>
+          <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total ECTS Progress:</Typography>
           <LinearProgress variant="determinate" value={totalProgressValue} />
-          <Typography variant="body2" style={{ textAlign: 'right' }}>
+          <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold' }}>
             {`${entries.reduce((total, entry) => total + entry.cost, 0)} / ${totalCostLimit}`}
           </Typography>
         </div>
