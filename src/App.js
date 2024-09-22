@@ -4,7 +4,7 @@ import {
   Checkbox,
   Button,
   FormControlLabel,
-  Grid,
+  Grid2,
   Typography,
   Paper,
   List,
@@ -15,21 +15,21 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-// Define colors for each label
+// Define pastel colors for each label
 const labelColors = {
-  THEO: '#3f51b5',
-  'Algorithmen (ALG)': '#f50057',
-  'Computergrafik und -vision (CGV)': '#4caf50',
-  'Datenbanken und Informationssysteme (DBI)': '#ff9800',
-  'Digitale Biologie und Digitale Medizin (DBM)': '#2196f3',
-  'Engineering software-intensiver Systeme (SE)': '#9c27b0',
-  'Formale Methoden und ihre Anwendungen (FMA)': '#e91e63',
-  'Maschinelles Lernen und Datenanalyse (MLA)': '#3f51b5',
-  'Rechnerarchitektur, Rechnernetze und Verteilte Systeme (RRV)': '#009688',
-  'Robotik (ROB)': '#ff5722',
-  'Sicherheit und Datenschutz (SP)': '#795548',
-  'Wissenschaftliches Rechnen und High Performance Computing (HPC)': '#607d8b',
-  'Wahlmodule ohne Zuordnung zu einem Fachgebiet': '#cddc39',
+  THEO: '#FFABAB',
+  'Algorithmen (ALG)': '#FFC3A0',
+  'Computergrafik und -vision (CGV)': '#FF677D',
+  'Datenbanken und Informationssysteme (DBI)': '#D4A5A5',
+  'Digitale Biologie und Digitale Medizin (DBM)': '#a196c2',
+  'Engineering software-intensiver Systeme (SE)': '#F9F7F7',
+  'Formale Methoden und ihre Anwendungen (FMA)': '#F4C2C2',
+  'Maschinelles Lernen und Datenanalyse (MLA)': '#F6E58D',
+  'Rechnerarchitektur, Rechnernetze und Verteilte Systeme (RRV)': '#45AAB8',
+  'Robotik (ROB)': '#78C4D4',
+  'Sicherheit und Datenschutz (SP)': '#A6D6D5',
+  'Wissenschaftliches Rechnen und High Performance Computing (HPC)': '#B9FBC0',
+  'Wahlmodule ohne Zuordnung zu einem Fachgebiet': '#F9E6B2',
 };
 
 function App() {
@@ -50,7 +50,7 @@ function App() {
   ];
 
   const [entryText, setEntryText] = useState('');
-  const [cost, setCost] = useState(0);
+  const [cost, setCost] = useState('');
   const [selectedLabels, setSelectedLabels] = useState([]);
   const [labels, setLabels] = useState(initialLabels);
   const [entries, setEntries] = useState([]);
@@ -63,7 +63,7 @@ function App() {
       alert('Please select at least one label.');
       return;
     }
-    let remainingCost = cost;
+    let remainingCost = parseInt(cost) || 0; // Use parsed cost or 0 if empty
     const lastLabelName = 'Wahlmodule ohne Zuordnung zu einem Fachgebiet';
 
     const updatedLabels = labels.map((label) => {
@@ -91,14 +91,14 @@ function App() {
 
     const newEntry = {
       text: entryText,
-      cost: cost,
+      cost: parseInt(cost),
       labels: selectedLabels,
     };
 
     setEntries([...entries, newEntry]);
     setLabels(finalLabels);
     setEntryText('');
-    setCost(0);
+    setCost(''); // Reset cost field to empty
     setSelectedLabels([]);
   };
 
@@ -147,38 +147,40 @@ function App() {
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {/* Entry Text Input */}
-            <Grid item xs={12}>
-              <TextField
-                  label="Module Name"
-                  variant="outlined"
-                  fullWidth
-                  value={entryText}
-                  onChange={(e) => setEntryText(e.target.value)}
-                  required
-              />
-            </Grid>
-
-            {/* Cost Input */}
-            <Grid item xs={12}>
-              <TextField
-                  label="ECTS"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  value={cost}
-                  onChange={(e) => setCost(parseInt(e.target.value))}
-                  required
-              />
-            </Grid>
+          <Grid2 container spacing={2}>
+            {/* Combined Module Name and Cost Input */}
+            <Grid2 item xs={12}>
+              <Grid2 container spacing={2}>
+                <Grid2 item xs={800}>
+                  <TextField
+                      label="Module Name"
+                      variant="outlined"
+                      fullWidth
+                      value={entryText}
+                      onChange={(e) => setEntryText(e.target.value)}
+                      required
+                  />
+                </Grid2>
+                <Grid2 item xs={4}>
+                  <TextField
+                      label="ECTS"
+                      type="number"
+                      variant="outlined"
+                      fullWidth
+                      value={cost}
+                      onChange={(e) => setCost(e.target.value)}
+                      required
+                  />
+                </Grid2>
+              </Grid2>
+            </Grid2>
 
             {/* Labels Selection */}
-            <Grid item xs={12}>
+            <Grid2 item xs={12}>
               <Typography variant="h6">Select Domains:</Typography>
-              <Grid container spacing={1}>
+              <Grid2 container spacing={1}>
                 {labels.map((label) => (
-                    <Grid item xs={6} sm={4} md={3} key={label.name}>
+                    <Grid2 item xs={6} sm={4} md={3} key={label.name}>
                       <FormControlLabel
                           control={
                             <Checkbox
@@ -194,27 +196,27 @@ function App() {
                                     backgroundColor: labelColors[label.name],
                                     borderRadius: '20px',
                                     padding: '5px 10px',
-                                    color: '#fff',
+                                    color: '#333',
                                     display: 'inline-block',
                                   }}
                               >
-                                <span>{label.name.includes('(') ? label.name.split('(')[1].split(')')[0].trim() : label.name}</span>
+                                <span>{label.name}</span>
                               </div>
                             </Tooltip>
                           }
                       />
-                    </Grid>
+                    </Grid2>
                 ))}
-              </Grid>
-            </Grid>
+              </Grid2>
+            </Grid2>
 
             {/* Submit Button */}
-            <Grid item xs={12}>
+            <Grid2 item xs={12}>
               <Button variant="contained" color="primary" type="submit" fullWidth>
                 Add Entry
               </Button>
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </form>
 
         {/* Displaying Entries */}
@@ -226,32 +228,34 @@ function App() {
           <List>
             {entries.map((entry, index) => (
                 <ListItem key={index} divider>
-                  <Grid container alignItems="center" justifyContent="space-between">
-                    <Grid item xs={8}>
+                  <Grid2 container alignItems="center" justifyContent="space-between">
+                    <Grid2 item xs={8}>
                       <Typography>
-                        <strong>{entry.text}</strong> - Cost: {entry.cost}, Labels: {entry.labels.map(label => (
-                          <div
-                              key={label}
-                              style={{
-                                backgroundColor: labelColors[label],
-                                borderRadius: '20px',
-                                padding: '5px 10px',
-                                color: '#fff',
-                                display: 'inline-block',
-                                marginRight: '5px',
-                              }}
-                          >
-                            {label.includes('(') ? label.split('(')[1].split(')')[0].trim() : label}
-                          </div>
-                      ))}
+                        <strong>{entry.text}</strong>
+                        <span style={{ marginLeft: '10px' }}>Cost: {entry.cost || ''}</span>
+                        <span> Labels: {entry.labels.map(label => (
+                            <div
+                                key={label}
+                                style={{
+                                  backgroundColor: labelColors[label],
+                                  borderRadius: '20px',
+                                  padding: '5px 10px',
+                                  color: '#333',
+                                  display: 'inline-block',
+                                  marginRight: '5px',
+                                }}
+                            >
+                              {label.includes('(') ? label.split('(')[1].split(')')[0].trim() : label}
+                            </div>
+                        ))}</span>
                       </Typography>
-                    </Grid>
-                    <Grid item xs={4} textAlign="right">
+                    </Grid2>
+                    <Grid2 item xs={4} textAlign="right">
                       <IconButton onClick={() => handleDelete(index)} color="secondary">
                         <DeleteIcon />
                       </IconButton>
-                    </Grid>
-                  </Grid>
+                    </Grid2>
+                  </Grid2>
                 </ListItem>
             ))}
           </List>
@@ -270,16 +274,15 @@ function App() {
                           backgroundColor: labelColors[label.name],
                           borderRadius: '20px',
                           padding: '5px 10px',
-                          color: '#fff',
+                          color: '#333',
                           display: 'inline-block',
+                          justifyContent: 'space-between',
                         }}
                     >
-                      {label.name}
+                      <span>{label.name}</span>
+                      <span style={{ marginLeft: '10px' }}>Balance: {label.balance}</span>
                     </div>
                     <LinearProgress variant="determinate" value={labelProgress} />
-                    <Typography variant="body2" style={{ textAlign: 'right' }}>
-                      Balance: {label.balance}
-                    </Typography>
                   </div>
               );
             }
