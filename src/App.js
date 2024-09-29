@@ -19,33 +19,68 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-// Define pastel colors, full names, and initial balances for each label
-const initialLabelsData = [
-  { name: 'THEO', fullName: 'THEO', color: '#FFABAB', initialBalance: 10 },
-  { name: 'ALG', fullName: 'Algorithmen', color: '#FFC3A0', initialBalance: 8 },
-  { name: 'CGV', fullName: 'Computergrafik und -vision', color: '#FF677D', initialBalance: 8 },
-  { name: 'DBI', fullName: 'Datenbanken und Informationssysteme', color: '#D4A5A5', initialBalance: 8 },
-  { name: 'DBM', fullName: 'Digitale Biologie und Digitale Medizin', color: '#a196c2', initialBalance: 8 },
-  { name: 'SE', fullName: 'Engineering software-intensiver Systeme', color: '#F9F7F7', initialBalance: 18 },
-  { name: 'FMA', fullName: 'Formale Methoden und ihre Anwendungen', color: '#F4C2C2', initialBalance: 8 },
-  { name: 'MLA', fullName: 'Maschinelles Lernen und Datenanalyse', color: '#F6E58D', initialBalance: 8 },
-  { name: 'RRV', fullName: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme', color: '#45AAB8', initialBalance: 8 },
-  { name: 'ROB', fullName: 'Robotik', color: '#78C4D4', initialBalance: 8 },
-  { name: 'SP', fullName: 'Sicherheit und Datenschutz', color: '#A6D6D5', initialBalance: 8 },
-  { name: 'HPC', fullName: 'Wissenschaftliches Rechnen und High Performance Computing', color: '#B9FBC0', initialBalance: 8 },
-  { name: 'WZ', fullName: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', color: '#F9E6B2', initialBalance: 19 },
-];
-
 function App() {
+  const initialLabelsData = [
+    { name: 'THEO', fullName: 'THEO', color: '#FFABAB', initialBalance: 10, balance: 0 },
+    { name: 'ALG', fullName: 'Algorithmen', color: '#FFC3A0', initialBalance: 8, balance: 0 },
+    { name: 'CGV', fullName: 'Computergrafik und -vision', color: '#FF677D', initialBalance: 8, balance: 0 },
+    { name: 'DBI', fullName: 'Datenbanken und Informationssysteme', color: '#D4A5A5', initialBalance: 8, balance: 0 },
+    { name: 'DBM', fullName: 'Digitale Biologie und Digitale Medizin', color: '#a196c2', initialBalance: 8, balance: 0 },
+    { name: 'SE', fullName: 'Engineering software-intensiver Systeme', color: '#F9F7F7', initialBalance: 18, balance: 0 },
+    { name: 'FMA', fullName: 'Formale Methoden und ihre Anwendungen', color: '#F4C2C2', initialBalance: 8, balance: 0 },
+    { name: 'MLA', fullName: 'Maschinelles Lernen und Datenanalyse', color: '#F6E58D', initialBalance: 8, balance: 0 },
+    { name: 'RRV', fullName: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme', color: '#45AAB8', initialBalance: 8, balance: 0 },
+    { name: 'ROB', fullName: 'Robotik', color: '#78C4D4', initialBalance: 8, balance: 0 },
+    { name: 'SP', fullName: 'Sicherheit und Datenschutz', color: '#A6D6D5', initialBalance: 8, balance: 0 },
+    { name: 'HPC', fullName: 'Wissenschaftliches Rechnen und High Performance Computing', color: '#B9FBC0', initialBalance: 8, balance: 0 },
+    { name: 'WZ', fullName: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', color: '#F9E6B2', initialBalance: 19, balance: 0 },
+  ];
+
+  const [labelsData, setLabelsData] = useState(initialLabelsData);
   const [entryText, setEntryText] = useState('');
   const [cost, setCost] = useState('');
   const [selectedLabels, setSelectedLabels] = useState([]);
   const [entries, setEntries] = useState([]);
-  const [labelsData, setLabelsData] = useState(initialLabelsData.map(label => ({ ...label, balance: label.initialBalance })));
-  const [openDialog, setOpenDialog] = useState(false); // State for dialog
-  const [updatedBalances, setUpdatedBalances] = useState({}); // State to track updated balances
+  const [openDialog, setOpenDialog] = useState(false);
+  const [updatedBalances, setUpdatedBalances] = useState({});
 
   const totalCostLimit = 53;
+
+  const updateBalances = (name, amount) => {
+    setLabelsData(prevLabelsData => {
+      let wzUpdate = 0;
+      return prevLabelsData.map(label => {
+        if (label.name === name) {
+          const newBalance = label.balance + amount;
+          let adjustedBalance = newBalance;
+          console.log("balance "+label.balance)
+          console.log("new balance "+newBalance)
+          console.log("initial balance "+label.initialBalance)
+
+          // Check for overflow
+          if (newBalance > label.initialBalance) {
+            wzUpdate = newBalance - label.initialBalance;  // Calculate overflow
+            console.log("overflow "+ wzUpdate)
+          }
+
+          // Check if previously above initial balance and now below
+          if (label.balance > label.initialBalance && newBalance < label.initialBalance) {
+            let wz = label.balance - label.initialBalance
+            wzUpdate = -( label.balance - label.initialBalance )// Remove overflow from WZ
+          }
+
+          return { ...label, balance: adjustedBalance };
+        } else {
+          return label;
+        }
+      }).map(label => {
+        if (label.name === 'WZ') {
+          return { ...label, balance: label.balance + wzUpdate }; // Update WZ
+        }
+        return label;
+      });
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -67,76 +102,22 @@ function App() {
       labels: selectedLabels,
     };
 
-    let overflow = 0;
-
-    // Log initial WZ balance
-    const initialWZBalance = labelsData.find(label => label.name === 'WZ').balance;
-    console.log('Initial WZ Balance:', initialWZBalance);
-
-    setLabelsData((prevLabels) => {
-      return prevLabels.map((label) => {
-        if (selectedLabels.includes(label.name)) {
-          let newBalance = label.balance - entryCost;
-
-          // Check for overflow
-          if (newBalance < 0 && label.name !== 'THEO') {
-            overflow += Math.abs(newBalance);
-            newBalance = 0; // Set to 0 if it goes negative
-          }
-
-          return { ...label, balance: newBalance };
-        }
-        return label;
-      });
+    // Update balances for the selected labels
+    selectedLabels.forEach(labelName => {
+      updateBalances(labelName, entryCost);
     });
 
-    // Log WZ balance after label updates
-    const updatedWZBalanceAfterLabels = labelsData.find(label => label.name === 'WZ').balance;
-
-    // Apply overflow to WZ only
-    if (overflow > 0) {
-      setLabelsData((prevLabels) => {
-        return prevLabels.map((label) => {
-          if (label.name === 'WZ') {
-            const newWZBalance = label.balance - overflow;
-
-            return { ...label, balance: newWZBalance };
-          }
-          return label;
-        });
-      });
-    }
-
-    setEntries((prevEntries) => [...prevEntries, newEntry]);
+    setEntries(prevEntries => [...prevEntries, newEntry]);
     setEntryText('');
     setCost('');
     setSelectedLabels([]);
   };
 
-
-
-
   const handleDelete = (index) => {
     const entryToDelete = entries[index];
-
-    // Log the entry being deleted and its associated labels
-    console.log('Deleting entry:', entryToDelete);
     entryToDelete.labels.forEach(labelName => {
-      const labelData = labelsData.find(label => label.name === labelName);
-      console.log(labelsData)
-      console.log(`Label: ${labelName}, Current Balance: ${labelData.balance}`);
+      updateBalances(labelName, -entryToDelete.cost);
     });
-
-    // Restore the balances of the corresponding labels
-    setLabelsData(prevLabels =>
-        prevLabels.map(label => {
-          if (entryToDelete.labels.includes(label.name)) {
-            return { ...label, balance: Math.min(label.balance + entryToDelete.cost, label.initialBalance) };
-          }
-          return label;
-        })
-    );
-
     const updatedEntries = entries.filter((_, i) => i !== index);
     setEntries(updatedEntries);
   };
@@ -146,33 +127,14 @@ function App() {
     if (e.target.checked) {
       setSelectedLabels([...selectedLabels, labelName]);
     } else {
-      setSelectedLabels(selectedLabels.filter((label) => label !== labelName));
+      setSelectedLabels(selectedLabels.filter(label => label !== labelName));
     }
   };
 
-  const calculateTotalProgress = () => {
-    const totalDeducted = entries.reduce((total, entry) => {
-      let entryCost = entry.cost;
-
-      // For each entry, ensure overflow isn't counted by comparing with available balances
-      const labelsForEntry = labelsData.filter(label => entry.labels.includes(label.name));
-      labelsForEntry.forEach(label => {
-        entryCost = Math.min(entryCost, label.initialBalance); // Deduct only up to the label's initial balance
-      });
-
-      return total + entryCost;
-    }, 0);
-
-    return totalDeducted;
-  };
-
   const handleOpenDialog = () => {
-    setUpdatedBalances(
-        labelsData.reduce((acc, label) => ({ ...acc, [label.name]: label.initialBalance }), {})
-    );
+    setUpdatedBalances(labelsData.reduce((acc, label) => ({ ...acc, [label.name]: label.initialBalance }), {}));
     setOpenDialog(true);
   };
-
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -187,37 +149,17 @@ function App() {
         prevLabels.map(label => ({
           ...label,
           initialBalance: updatedBalances[label.name],
-          balance: updatedBalances[label.name], // Update both initial and current balance
+          balance: updatedBalances[label.name],
         }))
     );
     setOpenDialog(false);
   };
 
-  const calculateWZProgress = () => {
-    const wZLabel = labelsData.find(label => label.name === 'WZ');
-    if (!wZLabel) return 0;
-
-    const totalDeductedForWZ = calculateTotalDeductedForWZ();
-    return (totalDeductedForWZ / wZLabel.initialBalance) * 100;
-  };
-  const calculateTotalDeductedForWZ = () => {
-    return labelsData.find(label => label.name === 'WZ').initialBalance - labelsData.find(label => label.name === 'WZ').balance
-  };
-
-  const totalProgressValue = calculateTotalProgress();
+  const totalProgressValue = entries.reduce((total, entry) => total + entry.cost, 0);
 
   return (
-      <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-            height: '100vh',
-            padding: '20px 20px', // Added padding on top and bottom
-            overflowY: 'auto',
-          }}
-      >
-        <div style={{ maxWidth: '800px', width: '100%' }}> {/* Centered container */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100vh', padding: '20px 20px', overflowY: 'auto' }}>
+        <div style={{ maxWidth: '800px', width: '100%' }}>
           <Typography variant="h2" gutterBottom style={{ fontWeight: 'bold' }}>
             TUM Informatics Master ECTS Calculator
           </Typography>
@@ -254,7 +196,7 @@ function App() {
                   Edit Balances
                 </Button>
                 <Grid container spacing={1}>
-                  {labelsData.map(({ name, fullName,initialBalance ,color }) => (
+                  {labelsData.map(({ name, fullName, initialBalance, color }) => (
                       <Grid item xs={6} sm={4} md={3} key={name}>
                         <FormControlLabel
                             control={
@@ -275,7 +217,7 @@ function App() {
                                       display: 'inline-block',
                                     }}
                                 >
-                                  <span>{name +" (" +  initialBalance+")"}</span>
+                                  <span>{name + " (" + initialBalance + ")"}</span>
                                 </div>
                               </Tooltip>
                             }
@@ -284,36 +226,31 @@ function App() {
                   ))}
                 </Grid>
               </Grid>
-
               <Grid item xs={12}>
-                <Button variant="contained" color="primary" type="submit" fullWidth>
+                <Button type="submit" variant="contained" color="primary" fullWidth>
                   Add Entry
                 </Button>
               </Grid>
             </Grid>
           </form>
 
-          {/* Dialog for editing balances */}
           <Dialog open={openDialog} onClose={handleCloseDialog}>
-            <DialogTitle>Edit Initial Balances</DialogTitle>
+            <DialogTitle>Edit Balances</DialogTitle>
             <DialogContent>
-              <Grid container spacing={2}>
-                {labelsData.map(({ name, fullName, color }) => (
-                    <Grid item xs={12} key={name}>
-                      <TextField
-                          label={`${fullName} Balance`}
-                          variant="outlined"
-                          fullWidth
-                          value={updatedBalances[name] || ''}
-                          onChange={(e) => handleBalanceChange(name, e.target.value)}
-                          InputProps={{ style: { backgroundColor: color } }}
-                      />
-                    </Grid>
-                ))}
-              </Grid>
+              {labelsData.map(({ name, fullName }) => (
+                  <TextField
+                      key={name}
+                      label={fullName}
+                      value={updatedBalances[name] || ''}
+                      onChange={(e) => handleBalanceChange(name, e.target.value)}
+                      fullWidth
+                      type="number"
+                      margin="normal"
+                  />
+              ))}
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseDialog} color="secondary">
+              <Button onClick={handleCloseDialog} color="primary">
                 Cancel
               </Button>
               <Button onClick={handleSubmitBalances} color="primary">
@@ -322,44 +259,19 @@ function App() {
             </DialogActions>
           </Dialog>
 
-          {/* Display list of entries */}
-          <Typography variant="h5" gutterBottom style={{ marginTop: '20px', fontWeight: 'bold' }}>
-            Modules
-          </Typography>
-
-          <Paper elevation={3} style={{ padding: '10px' }}>
+          <Paper style={{ marginTop: '20px', padding: '20px' }}>
+            <Typography variant="h5">Progress Overview:</Typography>
             <List>
               {entries.map((entry, index) => (
-                  <ListItem key={index} divider>
-                    <Grid container alignItems="center" justifyContent="space-between">
-                      <Grid item xs={8}>
-                        <Typography style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
-                          {entry.text}
-                          <div style={{ fontStyle: 'italic', fontWeight: 'lighter', fontSize: '0.9em' }}>
-                            ECTS: {entry.cost || ''} | Domains :{' '}
-                            {entry.labels.map((label) => {
-                              const labelData = labelsData.find((l) => l.name === label);
-                              return (
-                                  <div
-                                      key={label}
-                                      style={{
-                                        backgroundColor: labelData.color,
-                                        borderRadius: '20px',
-                                        padding: '5px 10px',
-                                        color: '#333',
-                                        display: 'inline-block',
-                                        marginRight: '5px',
-                                      }}
-                                  >
-                                    {label}
-                                  </div>
-                              );
-                            })}
-                          </div>
+                  <ListItem key={index}>
+                    <Grid container spacing={1} alignItems="center">
+                      <Grid item xs={10}>
+                        <Typography>
+                          {entry.text} (Cost: {entry.cost}, Labels: {entry.labels.join(', ')})
                         </Typography>
                       </Grid>
-                      <Grid item xs={4} textAlign="right">
-                        <IconButton onClick={() => handleDelete(index)} color="secondary">
+                      <Grid item xs={2}>
+                        <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(index)}>
                           <DeleteIcon />
                         </IconButton>
                       </Grid>
@@ -367,93 +279,26 @@ function App() {
                   </ListItem>
               ))}
             </List>
+
+            <Typography variant="h6" style={{ marginTop: '10px' }}>
+              Total ECTS used: {totalProgressValue} / {totalCostLimit} ({totalProgressValue} / {totalCostLimit})
+            </Typography>
           </Paper>
 
-          {/* Display domain distribution progress */}
-          <Typography variant="h5" style={{ fontWeight: 'bold', marginTop: '20px' }}>
-            Module Distribution:
-          </Typography>
-
-          {labelsData.map(({ name, fullName, color, initialBalance, balance }) => {
-            const totalDeductedForLabel = entries
-                .filter((entry) => entry.labels.includes(name))
-                .reduce((total, entry) => {
-                  if (name === 'WZ') {
-                    // Calculate total overflow to be added to WZ
-                    const overflowFromOtherLabels = entries.reduce((overflowTotal, entry) => {
-                      return entry.labels.reduce((acc, labelName) => {
-                        const labelData = labelsData.find(label => label.name === labelName);
-                        const balanceDiff = Math.max(0, entry.cost - labelData.initialBalance); // Calculate the overflow
-                        return acc + balanceDiff;
-                      }, 0);
-                    }, 0);
-                    return overflowFromOtherLabels;
-                  } else {
-                    // Normal label calculation
-                    return total + entry.cost;
-                  }
-                }, 0);
-
-            if (totalDeductedForLabel === 0) return null;
-
-            const labelProgress = (totalDeductedForLabel / initialBalance) * 100;
-
-            return (
-                <div key={name} style={{ marginBottom: '20px', backgroundColor: color, borderRadius: '10px', padding: '10px' }}>
-                  <div
-                      style={{
-                        backgroundColor: color,
-                        borderRadius: '20px',
-                        padding: '5px 10px',
-                        color: '#333',
-                        display: 'inline-block',
-                        justifyContent: 'space-between',
-                      }}
-                  >
-                    <span style={{ fontWeight: 'bold' }}>{fullName}</span>
-                  </div>
-                  <LinearProgress
-                      variant="determinate"
-                      value={labelProgress}
-                      style={{ backgroundColor: '#e0e0e0', borderRadius: '5px' }} // Background color for the track
-                      classes={{ bar: { backgroundColor: color } }} // Dynamic color for the progress bar
-                  />
-                  <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
-                    {totalDeductedForLabel}/{initialBalance} ECTS
-                  </Typography>
-                </div>
-            );
-          })}
-
-          {calculateTotalDeductedForWZ() > 0 && (
-              <div style={{ marginTop: '20px', backgroundColor: labelsData.find(label => label.name === 'WZ').color, borderRadius: '10px', padding: '10px' }}>
-                <Typography variant="h6" style={{ fontWeight: 'bold', color: '#333' }}>
-                  Wahlmodule ohne Zuordnung zu einem Fachgebiet und Overflow:
-                </Typography>
-                <LinearProgress
-                    variant="determinate"
-                    value={calculateWZProgress()}
-                    style={{ backgroundColor: '#e0e0e0', borderRadius: '5px' }} // Background color for the track
-                    classes={{ bar: { backgroundColor: labelsData.find(label => label.name === 'WZ').color } }} // Dynamic color for the progress bar
-                />
-                <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
-                  {calculateTotalDeductedForWZ()} ECTS of {labelsData.find(label => label.name === 'WZ').initialBalance} ECTS
-                </Typography>
-              </div>
-          )}
-
-          <div style={{ marginTop: '20px' }}>
-            <Typography variant="h6" style={{ fontWeight: 'bold' }}>Total Progress:</Typography>
-            <LinearProgress
-                variant="determinate"
-                value={(calculateTotalProgress() / totalCostLimit) * 100}
-                style={{ backgroundColor: '#e0e0e0', borderRadius: '5px' }} // Background color for the track
-                classes={{ bar: { backgroundColor: '#3f51b5' } }} // Custom color for the total progress bar
-            />
-            <Typography variant="body2" style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '5px' }}>
-              {calculateTotalProgress()} ECTS (Max {totalCostLimit} ECTS)
-            </Typography>
-          </div>
+          {/* Display progress bars for each label with balance above 0 */}
+          <Paper style={{ marginTop: '20px', padding: '20px' }}>
+            <Typography variant="h5">Label Balances:</Typography>
+            {labelsData.map(({ name, fullName, color, balance, initialBalance }) => (
+                balance > 0 ? (
+                    <div key={name} style={{ marginBottom: '10px' }}>
+                      <Typography>
+                        {fullName} - Balance: {balance} / {initialBalance}
+                      </Typography>
+                      <LinearProgress variant="determinate" value={(balance / initialBalance) * 100} style={{ backgroundColor: color }} />
+                    </div>
+                ) : null
+            ))}
+          </Paper>
         </div>
       </div>
   );
