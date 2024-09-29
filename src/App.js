@@ -38,13 +38,13 @@ function App() {
 
   const [labelsData, setLabelsData] = useState(initialLabelsData);
   const [entryText, setEntryText] = useState('');
-  const [cost, setCost] = useState('');
+  const [ects, setEcts] = useState('');
   const [selectedLabels, setSelectedLabels] = useState([]);
   const [entries, setEntries] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [updatedBalances, setUpdatedBalances] = useState({});
 
-  const totalCostLimit = 53;
+  const totalEctsLimit = 53;
 
   const updateBalances = (name, amount) => {
     setLabelsData(prevLabelsData => {
@@ -95,28 +95,28 @@ function App() {
       return;
     }
 
-    const entryCost = parseInt(cost) || 0;
+    const entryEcts = parseInt(ects) || 0;
     const newEntry = {
       text: entryText,
-      cost: entryCost,
+      ects: entryEcts,
       labels: selectedLabels,
     };
 
     // Update balances for the selected labels
     selectedLabels.forEach(labelName => {
-      updateBalances(labelName, entryCost);
+      updateBalances(labelName, entryEcts);
     });
 
     setEntries(prevEntries => [...prevEntries, newEntry]);
     setEntryText('');
-    setCost('');
+    setEcts('');
     setSelectedLabels([]);
   };
 
   const handleDelete = (index) => {
     const entryToDelete = entries[index];
     entryToDelete.labels.forEach(labelName => {
-      updateBalances(labelName, -entryToDelete.cost);
+      updateBalances(labelName, -entryToDelete.ects);
     });
     const updatedEntries = entries.filter((_, i) => i !== index);
     setEntries(updatedEntries);
@@ -155,7 +155,7 @@ function App() {
     setOpenDialog(false);
   };
 
-  const totalProgressValue = entries.reduce((total, entry) => total + entry.cost, 0);
+  const totalProgressValue = entries.reduce((total, entry) => total + entry.ects, 0);
 
   return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100vh', padding: '20px 20px', overflowY: 'auto' }}>
@@ -182,8 +182,8 @@ function App() {
                     type="number"
                     variant="outlined"
                     fullWidth
-                    value={cost}
-                    onChange={(e) => setCost(e.target.value)}
+                    value={ects}
+                    onChange={(e) => setEcts(e.target.value)}
                     required
                 />
               </Grid>
@@ -260,19 +260,22 @@ function App() {
           </Dialog>
 
           <Paper style={{ marginTop: '20px', padding: '20px' }}>
-            <Typography variant="h5">Progress Overview:</Typography>
-            <List>
+            <Typography variant="h5">Module Overview:</Typography>
+            <List style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '8px', padding: '10px', backgroundColor: '#f9f9f9' }}>
               {entries.map((entry, index) => (
-                  <ListItem key={index}>
+                  <ListItem key={index} style={{ padding: '15px', marginBottom: '10px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#ffffff', boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)' }}>
                     <Grid container spacing={1} alignItems="center">
                       <Grid item xs={10}>
-                        <Typography>
-                          {entry.text} (Cost: {entry.cost}, Labels: {entry.labels.join(', ')})
+                        <Typography variant="h6" style={{ fontWeight: 'bold', color: '#333' }}>
+                          {entry.text}
+                        </Typography>
+                        <Typography variant="body2" style={{ color: '#555' }}>
+                          ECTS: {entry.ects} | Domains: {entry.labels.join(', ')}
                         </Typography>
                       </Grid>
                       <Grid item xs={2}>
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(index)}>
-                          <DeleteIcon />
+                        <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(index)} style={{ padding: '10px' }}>
+                          <DeleteIcon fontSize="large" />
                         </IconButton>
                       </Grid>
                     </Grid>
@@ -280,21 +283,64 @@ function App() {
               ))}
             </List>
 
-            <Typography variant="h6" style={{ marginTop: '10px' }}>
-              Total ECTS used: {totalProgressValue} / {totalCostLimit} ({totalProgressValue} / {totalCostLimit})
-            </Typography>
+            <div style={{ marginTop: '20px' }}>
+              <Typography
+                  variant="h6"
+                  style={{
+                    fontWeight: 'bold',
+                    marginTop: '10px',
+                    marginBottom: '5px',  // Add margin below the text
+                    color: '#333',        // Change text color for better contrast
+                  }}
+              >
+                Total ECTS used: {totalProgressValue} / {totalEctsLimit}
+              </Typography>
+
+              <LinearProgress
+                  variant="determinate"
+                  value={(totalProgressValue / totalEctsLimit) * 100}
+                  style={{
+                    backgroundColor: "#e0e0e0",   // Background color for the track
+                    borderRadius: '5px',          // Rounded corners for the progress bar
+                    height: '10px',                // Increase the height for better visibility
+                    marginTop: '5px',             // Add some space between text and progress bar
+                  }}
+                  classes={{
+                    bar: {
+                      backgroundColor: "#3f51b5", // Customize bar color
+                    },
+                  }}
+              />
+            </div>
           </Paper>
 
           {/* Display progress bars for each label with balance above 0 */}
-          <Paper style={{ marginTop: '20px', padding: '20px' }}>
-            <Typography variant="h5">Label Balances:</Typography>
+          <Paper style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+            <Typography variant="h5" style={{ marginBottom: '20px', color: '#333' }}>Domain Balances:</Typography>
             {labelsData.map(({ name, fullName, color, balance, initialBalance }) => (
                 balance > 0 ? (
-                    <div key={name} style={{ marginBottom: '10px' }}>
-                      <Typography>
+                    <div key={name} style={{ marginBottom: '15px' }}>
+                      <Typography style={{ marginBottom: '5px', color: '#555' }}>
                         {fullName} - Balance: {balance} / {initialBalance}
                       </Typography>
-                      <LinearProgress variant="determinate" value={(balance / initialBalance) * 100} style={{ backgroundColor: color }} />
+                      <Tooltip title={`${balance} / ${initialBalance}`} arrow>
+                        <div style={{ position: 'relative' }}>
+                          <LinearProgress
+                              variant="determinate"
+                              value={(balance / initialBalance) * 100}
+                              style={{
+                                height: '20px',
+                                borderRadius: '5px',
+                                backgroundColor: '#e0e0e0', // Light gray background for the bar
+                              }}
+                              sx={{
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: color, // Keep the original color
+                                },
+                              }}
+                          />
+                        </div>
+                      </Tooltip>
                     </div>
                 ) : null
             ))}
