@@ -21,19 +21,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 function App() {
   const initialLabelsData = [
-    { name: 'THEO', fullName: 'THEO', color: '#FFABAB', initialBalance: 10, balance: 0 },
-    { name: 'ALG', fullName: 'Algorithmen', color: '#FFC3A0', initialBalance: 8, balance: 0 },
-    { name: 'CGV', fullName: 'Computergrafik und -vision', color: '#FF677D', initialBalance: 8, balance: 0 },
-    { name: 'DBI', fullName: 'Datenbanken und Informationssysteme', color: '#D4A5A5', initialBalance: 8, balance: 0 },
-    { name: 'DBM', fullName: 'Digitale Biologie und Digitale Medizin', color: '#a196c2', initialBalance: 8, balance: 0 },
-    { name: 'SE', fullName: 'Engineering software-intensiver Systeme', color: '#F9F7F7', initialBalance: 18, balance: 0 },
-    { name: 'FMA', fullName: 'Formale Methoden und ihre Anwendungen', color: '#F4C2C2', initialBalance: 8, balance: 0 },
-    { name: 'MLA', fullName: 'Maschinelles Lernen und Datenanalyse', color: '#F6E58D', initialBalance: 8, balance: 0 },
-    { name: 'RRV', fullName: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme', color: '#45AAB8', initialBalance: 8, balance: 0 },
-    { name: 'ROB', fullName: 'Robotik', color: '#78C4D4', initialBalance: 8, balance: 0 },
-    { name: 'SP', fullName: 'Sicherheit und Datenschutz', color: '#A6D6D5', initialBalance: 8, balance: 0 },
-    { name: 'HPC', fullName: 'Wissenschaftliches Rechnen und High Performance Computing', color: '#B9FBC0', initialBalance: 8, balance: 0 },
-    { name: 'WZ', fullName: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', color: '#F9E6B2', initialBalance: 19, balance: 0 },
+    { name: 'THEO', fullName: 'THEO', color: '#FF7A7A', initialBalance: 10, balance: 0 },
+    { name: 'ALG', fullName: 'Algorithmen', color: '#FF9B7A', initialBalance: 8, balance: 0 },
+    { name: 'CGV', fullName: 'Computergrafik und -vision', color: '#FF4D5A', initialBalance: 8, balance: 0 },
+    { name: 'DBI', fullName: 'Datenbanken und Informationssysteme', color: '#B77C7C', initialBalance: 8, balance: 0 },
+    { name: 'DBM', fullName: 'Digitale Biologie und Digitale Medizin', color: '#7F5E8B', initialBalance: 8, balance: 0 },
+    { name: 'SE', fullName: 'Engineering software-intensiver Systeme', color: '#aba6a6', initialBalance: 18, balance: 0 },
+    { name: 'FMA', fullName: 'Formale Methoden und ihre Anwendungen', color: '#E6A6A6', initialBalance: 8, balance: 0 },
+    { name: 'MLA', fullName: 'Maschinelles Lernen und Datenanalyse', color: '#C8B639', initialBalance: 8, balance: 0 },
+    { name: 'RRV', fullName: 'Rechnerarchitektur, Rechnernetze und Verteilte Systeme', color: '#388C94', initialBalance: 8, balance: 0 },
+    { name: 'ROB', fullName: 'Robotik', color: '#56B3C8', initialBalance: 8, balance: 0 },
+    { name: 'SP', fullName: 'Sicherheit und Datenschutz', color: '#80B2B0', initialBalance: 8, balance: 0 },
+    { name: 'HPC', fullName: 'Wissenschaftliches Rechnen und High Performance Computing', color: '#99E8B1', initialBalance: 8, balance: 0 },
+    { name: 'WZ', fullName: 'Wahlmodule ohne Zuordnung zu einem Fachgebiet', color: '#F7D87C', initialBalance: 19, balance: 0 },
   ];
 
   const [labelsData, setLabelsData] = useState(initialLabelsData);
@@ -58,13 +58,13 @@ function App() {
           console.log("initial balance "+label.initialBalance)
 
           // Check for overflow
-          if (newBalance > label.initialBalance) {
+          if (newBalance > label.initialBalance && label.name !== 'THEO') {
             wzUpdate = newBalance - label.initialBalance;  // Calculate overflow
             console.log("overflow "+ wzUpdate)
           }
 
           // Check if previously above initial balance and now below
-          if (label.balance > label.initialBalance && newBalance < label.initialBalance) {
+          if (label.balance > label.initialBalance && newBalance < label.initialBalance && label.name !== 'THEO') {
             wzUpdate = -( label.balance - label.initialBalance )// Remove overflow from WZ
           }
 
@@ -278,7 +278,7 @@ function App() {
 
           <Paper style={{ marginTop: '20px', padding: '20px' }}>
             <Typography variant="h5">Module Overview:</Typography>
-            <List style={{ maxHeight: '400px', overflowY: 'auto', padding: '10px', backgroundColor: '#f9f9f9' }}>
+            <List style={{ maxHeight: '400px', overflowY: 'auto', padding: '10px' }}>
               {entries.map((entry, index) => (
                   <ListItem key={index} style={{ padding: '15px', marginBottom: '10px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#ffffff', boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)' }}>
                     <Grid container spacing={1} alignItems="center">
@@ -363,7 +363,7 @@ function App() {
                   color: '#333',        // Change text color for better contrast
                 }}
             >
-              Total ECTS used: {totalProgressValue} / {totalEctsLimit}
+              Total ECTS: {totalProgressValue} / {totalEctsLimit}
             </Typography>
 
             <LinearProgress
