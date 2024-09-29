@@ -92,7 +92,6 @@ function App() {
 
     // Log WZ balance after label updates
     const updatedWZBalanceAfterLabels = labelsData.find(label => label.name === 'WZ').balance;
-    console.log('WZ Balance after label updates:', updatedWZBalanceAfterLabels);
 
     // Apply overflow to WZ only
     if (overflow > 0) {
@@ -100,9 +99,7 @@ function App() {
         return prevLabels.map((label) => {
           if (label.name === 'WZ') {
             const newWZBalance = label.balance - overflow;
-            console.log('WZ Balance before overflow adjustment:', label.balance);
-            console.log('Overflow amount:', overflow);
-            console.log('New WZ Balance after overflow adjustment:', newWZBalance);
+
             return { ...label, balance: newWZBalance };
           }
           return label;
@@ -116,8 +113,19 @@ function App() {
     setSelectedLabels([]);
   };
 
+
+
+
   const handleDelete = (index) => {
     const entryToDelete = entries[index];
+
+    // Log the entry being deleted and its associated labels
+    console.log('Deleting entry:', entryToDelete);
+    entryToDelete.labels.forEach(labelName => {
+      const labelData = labelsData.find(label => label.name === labelName);
+      console.log(labelsData)
+      console.log(`Label: ${labelName}, Current Balance: ${labelData.balance}`);
+    });
 
     // Restore the balances of the corresponding labels
     setLabelsData(prevLabels =>
