@@ -65,7 +65,6 @@ function App() {
 
           // Check if previously above initial balance and now below
           if (label.balance > label.initialBalance && newBalance < label.initialBalance) {
-            let wz = label.balance - label.initialBalance
             wzUpdate = -( label.balance - label.initialBalance )// Remove overflow from WZ
           }
 
@@ -189,12 +188,30 @@ function App() {
               </Grid>
 
               <Grid item xs={12}>
-                <Typography variant="h4" style={{ fontWeight: 'bold', display: 'inline-block', marginRight: '10px' }}>
-                  Select Domains:
-                </Typography>
-                <Button variant="outlined" color="primary" onClick={handleOpenDialog} style={{ display: 'inline-block' }}>
-                  Edit Balances
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
+                  <Typography
+                      variant="h4"
+                      style={{
+                        fontWeight: 'bold',
+                        display: 'inline-block',
+                        marginRight: '10px',
+                        padding: '5px' // Added padding
+                      }}
+                  >
+                    Select Domains:
+                  </Typography>
+                  <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={handleOpenDialog}
+                      style={{
+                        display: 'inline-block',
+                        padding: '5px 15px' // Added padding
+                      }}
+                  >
+                    Edit Balances
+                  </Button>
+                </div>
                 <Grid container spacing={1}>
                   {labelsData.map(({ name, fullName, initialBalance, color }) => (
                       <Grid item xs={6} sm={4} md={3} key={name}>
@@ -261,7 +278,7 @@ function App() {
 
           <Paper style={{ marginTop: '20px', padding: '20px' }}>
             <Typography variant="h5">Module Overview:</Typography>
-            <List style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '8px', padding: '10px', backgroundColor: '#f9f9f9' }}>
+            <List style={{ maxHeight: '400px', overflowY: 'auto', padding: '10px', backgroundColor: '#f9f9f9' }}>
               {entries.map((entry, index) => (
                   <ListItem key={index} style={{ padding: '15px', marginBottom: '10px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#ffffff', boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)' }}>
                     <Grid container spacing={1} alignItems="center">
@@ -270,7 +287,25 @@ function App() {
                           {entry.text}
                         </Typography>
                         <Typography variant="body2" style={{ color: '#555' }}>
-                          ECTS: {entry.ects} | Domains: {entry.labels.join(', ')}
+                          ECTS: {entry.ects} | Domains:
+                          {entry.labels.map(label => {
+                            const labelData = labelsData.find(l => l.name === label);
+                            return (
+                                <div
+                                    key={label}
+                                    style={{
+                                      display: 'inline-block',
+                                      backgroundColor: labelData.color,
+                                      borderRadius: '20px',
+                                      padding: '5px 10px',
+                                      margin: '2px', // Add some spacing between labels
+                                      color: '#fff',  // Change text color to white for better contrast
+                                    }}
+                                >
+                                  {labelData.fullName}
+                                </div>
+                            );
+                          })}
                         </Typography>
                       </Grid>
                       <Grid item xs={2}>
@@ -283,40 +318,12 @@ function App() {
               ))}
             </List>
 
-            <div style={{ marginTop: '20px' }}>
-              <Typography
-                  variant="h6"
-                  style={{
-                    fontWeight: 'bold',
-                    marginTop: '10px',
-                    marginBottom: '5px',  // Add margin below the text
-                    color: '#333',        // Change text color for better contrast
-                  }}
-              >
-                Total ECTS used: {totalProgressValue} / {totalEctsLimit}
-              </Typography>
 
-              <LinearProgress
-                  variant="determinate"
-                  value={(totalProgressValue / totalEctsLimit) * 100}
-                  style={{
-                    backgroundColor: "#e0e0e0",   // Background color for the track
-                    borderRadius: '5px',          // Rounded corners for the progress bar
-                    height: '10px',                // Increase the height for better visibility
-                    marginTop: '5px',             // Add some space between text and progress bar
-                  }}
-                  classes={{
-                    bar: {
-                      backgroundColor: "#3f51b5", // Customize bar color
-                    },
-                  }}
-              />
-            </div>
-          </Paper>
+            </Paper>
 
           {/* Display progress bars for each label with balance above 0 */}
           <Paper style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-            <Typography variant="h5" style={{ marginBottom: '20px', color: '#333' }}>Domain Balances:</Typography>
+            <Typography variant="h4" style={{ marginBottom: '20px', color: '#333' }}>Domain Balances:</Typography>
             {labelsData.map(({ name, fullName, color, balance, initialBalance }) => (
                 balance > 0 ? (
                     <div key={name} style={{ marginBottom: '15px' }}>
@@ -345,6 +352,36 @@ function App() {
                 ) : null
             ))}
           </Paper>
+
+          <div style={{ marginTop: '20px' }}>
+            <Typography
+                variant="h6"
+                style={{
+                  fontWeight: 'bold',
+                  marginTop: '10px',
+                  marginBottom: '5px',  // Add margin below the text
+                  color: '#333',        // Change text color for better contrast
+                }}
+            >
+              Total ECTS used: {totalProgressValue} / {totalEctsLimit}
+            </Typography>
+
+            <LinearProgress
+                variant="determinate"
+                value={(totalProgressValue / totalEctsLimit) * 100}
+                style={{
+                  backgroundColor: "#e0e0e0",   // Background color for the track
+                  borderRadius: '5px',          // Rounded corners for the progress bar
+                  height: '10px',                // Increase the height for better visibility
+                  marginTop: '5px',             // Add some space between text and progress bar
+                }}
+                classes={{
+                  bar: {
+                    backgroundColor: "#3f51b5", // Customize bar color
+                  },
+                }}
+            />
+          </div>
         </div>
       </div>
   );
