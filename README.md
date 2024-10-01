@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# TUM Informatics Master ECTS Calculator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a **React-based** web application that helps students of the TUM Informatics Master program manage their ECTS (European Credit Transfer and Accumulation System) credits. It allows users to add modules with associated ECTS and assign them to various domain labels. The application keeps track of the balance of credits per domain and adds overflow into non-major categories like "Wahlmodule ohne Zuordnung zu einem Fachgebiet" (WZ).
+If you add all modules in one run and dont delete and readd a few times it works fine. Adding is pretty quick, I would say. 
+Deleting modules has a bug I am detailed later. 
 
-## Available Scripts
+If you want to fork this project, claim it as your own and make it better, feel free to do so. Do not ask permission, just do it.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Add Modules**: Users can input module names and their corresponding ECTS credits.
+- **Domain Labeling**: Each module can be assigned to one or more domain labels.
+- **Balance Management**: The app tracks balances for each domain, with a visual representation of the balance as progress bars.
+- **Overflow Handling**: Automatically manages overflow of ECTS credits from core domains to elective categories like WZ.
+- **Edit Balances**: Users can edit the initial balance values for each domain using a dialog.
+- **Delete Entries**: Users can remove module entries, and the corresponding ECTS values will be adjusted accordingly.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technologies
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **React**: Used for building the user interface.
+- **Material UI**: For styling components like buttons, checkboxes, dialog boxes, and progress bars.
+- **State Management**: Managed using React's `useState` hook.
 
-### `npm test`
+## How to Run the Application
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Make sure you have **Node.js** and **npm** (or **yarn**) installed.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Steps
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/ects-calculator.git
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. Navigate to the project directory:
+    ```bash
+    cd ects-calculator
+    ```
 
-### `npm run eject`
+3. Install the necessary dependencies:
+    ```bash
+    npm install
+    ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. Start the development server:
+    ```bash
+    npm start
+    ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+5. Open your browser and go to `http://localhost:3000`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Editing Initial Balances
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Click on the **"Edit Balances"** button to adjust the initial balances for each domain.
 
-## Learn More
+### Adding Modules
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Enter the module name and ECTS value in the respective fields.
+2. Select one or more domain labels where the module belongs.
+3. Click **"Add Entry"** to update the domain balances and add the entry to the list.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Removing Modules and Main bug that is left
 
-### Code Splitting
+- Click the **trash icon** next to a module to remove it from the list. This will also update the domain balances accordingly. Usually this works just fine, but overflow is added to WZ and then deleting that is super buggy. There is a million ways this could be fixed and I might do it someday.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Application Structure
 
-### Analyzing the Bundle Size
+The main structure of the app is located in the `App.js` file, and the components are structured as follows:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. **Input Form**: Consists of input fields for the module name and ECTS, along with checkboxes to select the domains.
+2. **Module Overview**: Displays a list of added modules with the corresponding domain labels and ECTS values.
+3. **Progress Bars**: Visualizes the balance of each domain and the overall progress toward the total ECTS limit.
+4. **Dialog Box**: For editing the initial domain balances.
 
-### Making a Progressive Web App
+## Customization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- The domain labels, colors, and initial balances are predefined but can easily be customized by modifying the `initialLabelsData` array in the `App.js` file.
+- The total ECTS limit can be adjusted by changing the `totalEctsLimit` variable.
 
-### Advanced Configuration
+## Future Improvements
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- **Persistence**: Add local storage or a database to persist data between sessions.
+- **Validation**: Add more validation rules to prevent invalid input.
+- **User Authentication**: Allow users to save their progress under unique accounts.
 
-### Deployment
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This project is open source and available under the [MIT License](LICENSE).
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Enjoy tracking your TUM Informatics Master's ECTS efficiently!
