@@ -19,6 +19,9 @@ import {
   DialogActions,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+
 
 function App() {
   const initialLabelsData = [
@@ -332,34 +335,66 @@ function App() {
           {/* Display progress bars for each label with balance above 0 */}
           <Paper style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
             <Typography variant="h4" style={{ marginBottom: '20px', color: '#333' }}>Domain Balances:</Typography>
-            {labelsData.map(({ name, fullName, color, balance, initialBalance }) => (
-                balance > 0 ? (
-                    <div key={name} style={{ marginBottom: '15px' }}>
-                      <Typography style={{ marginBottom: '5px', color: '#555' }}>
-                        {fullName} - Balance: {balance} / {initialBalance}
-                      </Typography>
-                      <Tooltip title={`${balance} / ${initialBalance}`} arrow>
-                        <div style={{ position: 'relative' }}>
-                          <LinearProgress
-                              variant="determinate"
-                              value={(balance / initialBalance) * 100}
-                              style={{
-                                height: '20px',
-                                borderRadius: '5px',
-                                backgroundColor: '#e0e0e0', // Light gray background for the bar
-                              }}
-                              sx={{
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: color, // Keep the original color
-                                },
-                              }}
-                          />
-                        </div>
-                      </Tooltip>
-                    </div>
-                ) : null
-            ))}
+            {labelsData.map(({ name, fullName, color, balance, initialBalance }) => {
+              if (balance <= 0) return null;
+
+              // If there's overflow, calculate the percentage split
+              const hasOverflow = balance > initialBalance;
+              const overflowPct = hasOverflow ? ((balance - initialBalance) / balance) * 100 : 0;
+              const normalPct = hasOverflow ? (initialBalance / balance) * 100 : (balance / initialBalance) * 100;
+
+              return (
+                  <div key={name} style={{ marginBottom: '15px' }}>
+                    <Typography
+                        style={{
+                          marginBottom: '5px',
+                          color: '#333',
+                          fontWeight: '500',
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '1rem' // Base size for text and icon
+                        }}
+                    >
+                      <span style={{
+                        marginRight: '8px',
+                        color: balance >= initialBalance ? 'green' : '#f57c00',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}>
+                        {balance >= initialBalance ? (
+                            <CheckCircleIcon fontSize="inherit" />
+                        ) : (
+                            <ErrorOutlineIcon fontSize="inherit" />
+                        )}
+                      </span>
+                                          <span>
+                        <strong>{fullName}</strong> — Balance:
+                        <span style={{
+                          color: balance >= initialBalance ? 'green' : '#d32f2f',
+                          fontWeight: '700',
+                          fontSize: '1.1rem',
+                          marginLeft: '4px',
+                          marginRight: '4px'
+                        }}>
+                          {balance}
+                        </span>
+                        / {initialBalance}
+                      </span>
+                    </Typography>
+
+                    <Tooltip title={`Overflow: ${Math.abs(Math.min(initialBalance - balance,0))}`} arrow>
+                      <div style={{ position: 'relative', height: '20px', borderRadius: '5px', backgroundColor: '#e0e0e0', overflow: 'hidden', display: 'flex' }}>
+                        {hasOverflow && (
+                            <div style={{ width: `${overflowPct}%`, backgroundColor: "#F7D87C" }} />
+                        )}
+                        <div style={{ width: `${normalPct}%`, backgroundColor: color }} />
+                      </div>
+                    </Tooltip>
+                  </div>
+              );
+            })}
           </Paper>
+
 
           <div style={{ marginTop: '20px' }}>
             <Typography
