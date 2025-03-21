@@ -8,6 +8,7 @@ import {
   Grid,
   Typography,
   Paper,
+  Box,
   List,
   ListItem,
   IconButton,
@@ -18,6 +19,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import Checklist from './Checklist';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -425,6 +427,8 @@ function App() {
                 }}
             />
           </div>
+          <Checklist labelsData={labelsData} totalProgressValue={totalProgressValue} />
+
         </div>
       </div>
   );
