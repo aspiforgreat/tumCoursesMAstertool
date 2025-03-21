@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import {
   TextField,
   Checkbox,
@@ -46,40 +47,56 @@ function App() {
 
   const totalEctsLimit = 53;
 
-  const updateBalances = (name, amount) => {
+  const updateBalances = () => {
     setLabelsData(prevLabelsData => {
       let wzUpdate = 0;
-      return prevLabelsData.map(label => {
-        if (label.name === name) {
-          const newBalance = label.balance + amount;
-          let adjustedBalance = newBalance;
-          console.log("balance "+label.balance)
-          console.log("new balance "+newBalance)
-          console.log("initial balance "+label.initialBalance)
+      const labelMap = new Map();
 
-          // Check for overflow
-          if (newBalance > label.initialBalance && label.name !== 'THEO') {
-            wzUpdate = newBalance - label.initialBalance;  // Calculate overflow
-            console.log("overflow "+ wzUpdate)
-          }
-
-          // Check if previously above initial balance and now below
-          if (label.balance > label.initialBalance && newBalance < label.initialBalance && label.name !== 'THEO') {
-            wzUpdate = -( label.balance - label.initialBalance )// Remove overflow from WZ
-          }
-
-          return { ...label, balance: adjustedBalance };
-        } else {
-          return label;
-        }
-      }).map(label => {
-        if (label.name === 'WZ') {
-          return { ...label, balance: label.balance + wzUpdate }; // Update WZ
-        }
-        return label;
+      // Initialize a map for easy updates
+      prevLabelsData.forEach(label => {
+        labelMap.set(label.name, { ...label });
       });
+
+      // Process each entry
+      entries.forEach(entry => {
+        const { ects, labels } = entry;
+
+        labels.forEach(labelName => {
+          const label = labelMap.get(labelName);
+          if (!label) return;
+
+          const newBalance = label.balance + ects;
+
+          // Track WZ updates
+          if (label.name !== 'THEO') {
+            if (label.balance <= label.initialBalance && newBalance > label.initialBalance) {
+              wzUpdate += newBalance - label.initialBalance;
+            } else if (label.balance > label.initialBalance && newBalance < label.initialBalance) {
+              wzUpdate -= label.balance - label.initialBalance;
+            }
+          }
+
+          label.balance = newBalance;
+          labelMap.set(labelName, label);
+        });
+      });
+
+      // Update WZ balance
+      if (labelMap.has('WZ')) {
+        const wzLabel = labelMap.get('WZ');
+        wzLabel.balance += wzUpdate;
+        labelMap.set('WZ', wzLabel);
+      }
+
+      return Array.from(labelMap.values());
     });
   };
+
+  useEffect(() => {
+    // Reset all balances to 0 so it recalculates correctly
+    setLabelsData(initialLabelsData);
+    updateBalances()
+  }, [entries]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -101,11 +118,6 @@ function App() {
       labels: selectedLabels,
     };
 
-    // Update balances for the selected labels
-    selectedLabels.forEach(labelName => {
-      updateBalances(labelName, entryEcts);
-    });
-
     setEntries(prevEntries => [...prevEntries, newEntry]);
     setEntryText('');
     setEcts('');
@@ -114,9 +126,6 @@ function App() {
 
   const handleDelete = (index) => {
     const entryToDelete = entries[index];
-    entryToDelete.labels.forEach(labelName => {
-      updateBalances(labelName, -entryToDelete.ects);
-    });
     const updatedEntries = entries.filter((_, i) => i !== index);
     setEntries(updatedEntries);
   };
@@ -147,8 +156,7 @@ function App() {
     setLabelsData(prevLabels =>
         prevLabels.map(label => ({
           ...label,
-          initialBalance: updatedBalances[label.name],
-          balance: updatedBalances[label.name],
+          initialBalance: updatedBalances[label.name]
         }))
     );
     setOpenDialog(false);
