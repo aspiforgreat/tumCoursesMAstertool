@@ -63,7 +63,7 @@ If you want to fork this project, claim it as your own and make it better, feel 
 
 ### Removing Modules and Main bug that is left
 
-- Click the **trash icon** next to a module to remove it from the list. This will also update the domain balances accordingly. Usually this works just fine, but overflow is added to WZ and then deleting that is super buggy. There is a million ways this could be fixed and I might do it someday.
+- Click the **trash icon** next to a module to remove it from the list. This will also update the domain balances accordingly. Usually this works just fine, but overflow is added to WZ and then deleting that used to be super buggy. I did not test it long enough to confidently say it is fixed.
 
 ## Application Structure
 
