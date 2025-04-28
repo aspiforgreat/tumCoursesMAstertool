@@ -12,8 +12,8 @@ const Checklist = ({ labelsData, totalProgressValue }) => {
     const theoLabel = labelsData.find(label => label.name === 'THEO');
 
     const isThreeDomainsDone = domainsOverBalance >= 3;
-    const isTheoDone = theoLabel && theoLabel.balance > theoLabel.initialBalance;
-    const isTotalEctsFull = totalProgressValue >= 51;
+    const isTheoDone = theoLabel && theoLabel.balance >= theoLabel.initialBalance;
+    const isTotalEctsFull = totalProgressValue >= totalEctsLimit;
 
     const checklistItems = [
         {
