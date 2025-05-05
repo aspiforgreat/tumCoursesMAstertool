@@ -18,12 +18,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Popover,
+    Link
 } from '@mui/material';
 import Checklist from './Checklist';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 function App() {
   const initialLabelsData = [
@@ -169,6 +171,18 @@ function App() {
 
   const totalProgressValue = entries.reduce((total, entry) => total + entry.ects, 0);
 
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100vh', padding: '20px 20px', overflowY: 'auto' }}>
         <div style={{ maxWidth: '800px', width: '100%' }}>
@@ -219,11 +233,175 @@ function App() {
                       onClick={handleOpenDialog}
                       style={{
                         display: 'inline-block',
-                        padding: '5px 15px' // Added padding
+                        padding: '5px 15px'
                       }}
                   >
                     Edit Balances
                   </Button>
+                  <Button
+                      variant="outlined"
+                      color="error" // Use "error" for red in MUI
+                      onClick={handlePopoverOpen}
+                      style={{
+                        display: 'inline-block',
+                        // Increased left padding
+                        marginLeft: '10px', // Added margin to separate from the previous button
+                      }}
+                  >
+                    Guide & Important Notes
+                  </Button>
+
+                  <Popover
+                      open={open}
+                      anchorEl={anchorEl}
+                      onClose={handlePopoverClose}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                      }}
+                      PaperProps={{
+                        sx: { p: 2, maxWidth: 500 },
+                      }}
+                  >
+                    <Typography variant="h4" gutterBottom>
+                      Edit the balances to choose your distribution according to the following information:
+                    </Typography>
+                    <Typography variant="h5" gutterBottom>
+                      Important TUM Information about Modules:
+                    </Typography>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+                      {`In the electives area, 53 credits must be earned. You will select:
+                      - One specialization area with at least 18 credits
+                      - Two supplementary areas with at least 8 credits each from the specializations offered
+                      - An additional 9 credits in any subject areas
+                      
+                      Excess credits in the three chosen subject areas automatically count towards the "free elective".
+                      
+                      Theory Modules:
+                      - At least 10 credits from "Theory" modules must be earned
+                      - These can be found under "Theory" in the study tree of each subject area
+                      - They can belong to any subject area and do not need to be in the focus or supplementary areas
+                      
+                      Remaining 10 Credits — Choose One Profile:
+                      - Research: Take the guided research module
+                      - Practice: Complete a second Master's practical course
+                      - Practice in Depth: Complete an Advanced Master's practical course
+                      - Fundamentals: Earn all remaining credits through elective modules from any subject area
+                      
+                      Special Regulations for Individual Modules:
+                      
+                      Machine Learning and Data Analysis — Only one of the following three:
+                      - IN2028 Business Analytics and Machine Learning
+                      - IN2339 Data Analysis and Visualization in R
+                      - IN2030 Data Mining and Knowledge Discovery
+                      
+                      Machine Learning and Data Analysis — Only one of the following two:
+                      - IN2064 Machine Learning
+                      - IN2332 Statistical Modeling and Machine Learning
+                      
+                      Formal Methods and Their Application — Only one of the following two:
+                      - IN2048 Equational Logic and Lambda Calculus
+                      - IN2358 Lambda Calculus
+                      
+                      Computer Graphics and Vision — Only one of the following three:
+                      - IN2364 Advanced Deep Learning for Computer Vision
+                      - IN2389 Advanced Deep Learning for Computer Vision: Dynamic Vision
+                      - IN2390 Advanced Deep Learning for Computer Vision: Visual Computing
+                      
+                      Source (as of May 5, 2025):`}
+                    </Typography>
+
+                    <Link
+                        href="https://www.cit.tum.de/en/cit/studies/degree-programs/master-informatics/"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                      https://www.cit.tum.de/en/cit/studies/degree-programs/master-informatics/
+                    </Link>
+
+                    <Typography variant="h5" gutterBottom sx={{ mt: 2 }}>
+                      TUM Master Informatics, DEA: Offered Lectures
+                    </Typography>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+                      Check out the list of available modules which I got from this Github project by Vincent Bürgin
+            and Fehmi :
+    <Link
+                          href="https://github.com/Vuenc/TUM-Master-Informatics-Offered-Lectures#tum-master-informatics-dea-offered-lectures"
+                          target="_blank"
+                          rel="noopener"
+                      >
+                    TUM-Master-Informatics-Offered-Lectures{' '}
+                      </Link>
+
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 2 }}>
+                      Informatics master:
+                    </Typography>
+                    <Typography variant="body2">
+
+                      <Link
+                          href="https://vuenc.github.io/TUM-Master-Informatics-Offered-Lectures/informatics-ss25.html"
+                          target="_blank"
+                          rel="noopener"
+                      >
+                        List of courses offered in summer semester 2025{' '}
+                      </Link>
+                    </Typography>
+
+                    <Typography variant="body2">
+
+                      <Link
+                          href="https://vuenc.github.io/TUM-Master-Informatics-Offered-Lectures/informatics-all.html"
+                          target="_blank"
+                          rel="noopener"
+                      >
+                        List of all courses and when last offered{' '}
+                      </Link>
+                    </Typography>
+
+                    <Typography variant="body2" sx={{ mt: 2 }}>
+                      DEA master:
+                    </Typography>
+
+                    <Typography variant="body2">
+
+                      <Link
+                          href="https://vuenc.github.io/TUM-Master-Informatics-Offered-Lectures/dea-ss25.html"
+                          target="_blank"
+                          rel="noopener"
+                      >
+                        List of elective courses offered in summer semester 2025{' '}
+                      </Link>
+                    </Typography>
+
+                    <Typography variant="body2">
+
+                      <Link
+                          href="https://vuenc.github.io/TUM-Master-Informatics-Offered-Lectures/dea-all.html"
+                          target="_blank"
+                          rel="noopener"
+                      >
+                        List of all courses and when last offered{' '}
+                      </Link>
+                    </Typography>
+
+                    <Typography variant="h6">
+
+                      <Link
+                          href="https://github.com/aspiforgreat/tumCoursesMAstertool"
+                          target="_blank"
+                          rel="noopener"
+                      >
+                        Link to the github project of this ECTS Calculator{' '}
+                      </Link>
+                    </Typography>
+
+
+                  </Popover>
                 </div>
                 <Grid container spacing={1}>
                   {labelsData.map(({ name, fullName, initialBalance, color }) => (
