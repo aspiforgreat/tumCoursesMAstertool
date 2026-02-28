@@ -4,9 +4,9 @@ import { Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/mat
 const Checklist = ({ labelsData, totalProgressValue }) => {
     const totalEctsLimit = 53;
 
-    // Count how many labels (excluding THEO and WZ) have balance > initialBalance
+    // Count how many labels (excluding THEO and WZ) have balance >= initialBalance
     const domainsOverBalance = labelsData.filter(label =>
-        label.name !== 'THEO' && label.name !== 'WZ' && label.balance > label.initialBalance
+        label.name !== 'THEO' && label.name !== 'WZ' && label.balance >= label.initialBalance
     ).length;
 
     const theoLabel = labelsData.find(label => label.name === 'THEO');
